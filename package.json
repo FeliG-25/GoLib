@@ -1,0 +1,19 @@
+{
+  "name": "go_lib",
+  "version": "1.0.0",
+  "description": "aplikasi peminjaman dan pengembalian buku secara online",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FeliG-25/GoLib.git"
+  },
+  "author": "Feli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FeliG-25/GoLib/issues"
+  },
+  "homepage": "https://github.com/FeliG-25/GoLib#readme"
+}
