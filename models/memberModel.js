@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('./userModel');
-const Borrowing = require('./transactionModel');
+const Transaction = require('./transactionModel');
 
 const memberSchema = new mongoose.Schema({
     member_id: {
@@ -22,7 +22,7 @@ const memberSchema = new mongoose.Schema({
         required: [true, 'Member address can\'t be empty']
     },
     transactions: {
-        type: [Borrowing]
+        type: [Transaction]
     },
     cart: {
         type: Cart,
