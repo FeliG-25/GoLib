@@ -12,6 +12,10 @@ const courierSchema = new mongoose.Schema({
     number_plate: {
         type: String,
         required: [true, 'Courier must have a detail number plate']
+    },
+    branch_name: {
+        type: String,
+        required: [true, 'Courier must in spesific branch']
     }
 });
 
