@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
-const Borrowing = require('./borrowingModel');
+const Borrowed = require('./transactionModel');
 const Courier = require('./courierModel');
 
 const borrowSchema = new mongoose.Schema({
     borrows: {
-        type: [Borrowing]
+        type: [Borrowed]
     },
     couriers: {
         type: [Courier]
