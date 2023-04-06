@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('./userModel');
-const Borrowing = require('./borrowingModel');
+const Borrowing = require('./transactionModel');
 
 const memberSchema = new mongoose.Schema({
     member_id: {
