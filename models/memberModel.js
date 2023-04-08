@@ -7,7 +7,7 @@ const memberSchema = new mongoose.Schema({
     member_id: {
         type: String
     },
-    full_name: {
+    user_name: {
         type: String,
         required: [true, 'Member must have spesific name']
     },
