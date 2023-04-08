@@ -6,7 +6,7 @@ const adminSchema = new mongoose.Schema({
         type: String
     },
     couriers: {
-        type: [Courier],
+        type: [Courier.schema],
         required: [true, 'couriers can\'t be empty']
     },
     branch_name: {

@@ -3,7 +3,7 @@ const Book = require('./bookModel');
 
 const cartSchema = new mongoose.Schema({
     books: {
-        type: [Book]
+        type: [Book.schema]
     }
 });
 

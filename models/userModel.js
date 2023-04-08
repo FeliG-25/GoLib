@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-    userName: {
+    user_name: {
         type: String,
         required: [true, 'user must have username']
     },
@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'user must have password']
     },
-    userType: {
+    user_type: {
         type: String,
         required: [true, 'user must have spesific type']
     }
