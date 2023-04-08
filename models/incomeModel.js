@@ -6,7 +6,7 @@ const incomeSchema = new mongoose.Schema({
         type: String
     },
     month_income: {
-        type: [MonthIncome]
+        type: [MonthIncome.schema]
     }
 });
 

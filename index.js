@@ -9,6 +9,6 @@ app.use((req,res,next) => {
 })
 
 // routes for users
-app.use('/api/v1/users', userRouter)
+app.use('/api/v1', userRouter)
 
 module.exports = app

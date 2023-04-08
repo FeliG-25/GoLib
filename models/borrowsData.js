@@ -4,10 +4,10 @@ const Courier = require('./courierModel');
 
 const borrowSchema = new mongoose.Schema({
     borrows: {
-        type: [Borrowed]
+        type: [Borrowed.schema]
     },
     couriers: {
-        type: [Courier]
+        type: [Courier.schema]
     }
 });
 
