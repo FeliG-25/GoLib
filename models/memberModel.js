@@ -7,9 +7,13 @@ const memberSchema = new mongoose.Schema({
     member_id: {
         type: String
     },
-    user_name: {
+    full_name: {
         type: String,
         required: [true, 'Member must have spesific name']
+    },
+    email: {
+        type: String,
+        required: [true, 'Member must have spesific email']
     },
     balance: {
         type: Number,
@@ -36,6 +40,17 @@ const memberSchema = new mongoose.Schema({
     }
 });
 
-const Member = mongoose.model('Member', memberSchema);
+const MemberResponseSchema = new mongoose.Schema({
+    user_name: String,
+    birth_date: String,
+    phone_number: String,
+    email: String,
+    addres: String,
+    balance: String,
+    full_name: String,
+})
 
-module.exports = Member;
+const Member = mongoose.model('Member', memberSchema);
+const MemberResponse = mongoose.model('Member Response', MemberResponseSchema);
+
+module.exports = {Member, MemberResponse};
