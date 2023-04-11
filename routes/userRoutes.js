@@ -17,6 +17,9 @@ router
 router
 .route('/member/profile/:id')
 .get(auth, userController.getUserProfile);
+router
+.route('/profile/:id')
+.patch(userController.updateUserProfile);
 
 
 module.exports = router;
