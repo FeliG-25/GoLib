@@ -99,12 +99,8 @@ exports.login = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
-        console.log('test brow, ')
-
-        const member = await Member.findOne({'email':user.email})
-        console.log('nyampe bikin member')
-        console.log('nama member: ', member.full_name)
-
+        const member = await Member.findOne({'member_id':user._id})
+        
         let result = {
             full_name: member.full_name,
             user_name: user.user_name,
