@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const dotenv = require('dotenv')
 
-const User = require('./../models/userModel');
-const Member = require('./../models/memberModel');
+const User = require('./../models/userModel')
+const Member = require('./../models/memberModel')
 
 const mongoose = require('mongoose')
 
@@ -16,6 +16,7 @@ exports.createUser = async (req, res) => {
 
         // Check if username is already taken
         const existingUser = await User.findOne({ email });
+        
         if (existingUser){
             return res.status(400).json({
                 status: 'fail',
@@ -23,17 +24,23 @@ exports.createUser = async (req, res) => {
             });
         }
 
+        let savedUser = User
+
         const newMember = await Member.create(req.body);
         const newUser = new User({user_name, password, email, user_type})
-        await newUser.save();
-        
-        // const newUser = await User.create(req.body);
+        await newUser.save().then(user => {
+            console.log("Added new user: ", user);
+            newMember.member_id = user._id
+            newMember.save()
+            savedUser = user;
+        });
         
         res.status(201).json({
             status: 201,
             message: 'Registered! Please Login'
         });
     } catch (err) {
+        console.log(err)
         res.status(400).json({
             status:'Register Failed!',
             message: err
@@ -47,7 +54,9 @@ exports.login = async (req, res) => {
 
     try {
         const user = await User.findOne({email});
-        const member = await Member.Member.findOne({email});
+        const userId = user._id
+        console.log(userId);
+        const member = await Member.findOne({'member_id': userId}).exec();
 
         //If there is no user
         if (!user && !member){
@@ -69,9 +78,13 @@ exports.login = async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
 
         res.status(300).json({
-            status:200,
-            user: user,
-            member: member,
+            // status:200,
+            // user: user,
+            // member: member,
+            // token: token
+
+            status: 200,
+            message: "Success! Welcome back, " + member.full_name + "!",
             token: token
         })
 
@@ -86,25 +99,22 @@ exports.login = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
-        console.log('test brow, ')
-
-        const member = await Member.Member.findOne({'email':user.email})
-        console.log('nyampe bikin member')
-
-        var response = new Member.MemberResponse({
+        const member = await Member.findOne({'member_id':user._id})
+        
+        let result = {
             full_name: member.full_name,
             user_name: user.user_name,
             birth_date: member.birth_date,
-            phone_number: member.phone_number,
+            phone: member.phone,
             email: user.email,
             address: member.address,
             balance: member.balance
-        })
+        }
         
         res.status(200).json({
             status: '200',
             message: 'Success!',
-            data: response
+            data: result
         });
     } catch (err) {
         console.error(err.message);
