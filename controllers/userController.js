@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const dotenv = require('dotenv')
 
-const User = require('./../models/userModel');
-const Member = require('./../models/memberModel');
+const User = require('./../models/userModel')
+const Member = require('./../models/memberModel')
 
 const mongoose = require('mongoose')
 
@@ -47,7 +47,9 @@ exports.login = async (req, res) => {
 
     try {
         const user = await User.findOne({email});
-        const member = await Member.Member.findOne({email});
+        const userId = user._id
+        console.log(userId);
+        const member = await Member.findOne({'member_id': userId}).exec();
 
         //If there is no user
         if (!user && !member){
@@ -73,6 +75,10 @@ exports.login = async (req, res) => {
             user: user,
             member: member,
             token: token
+
+            // status: 200,
+            // message: "Success! Welcome " + user.user_name,
+            // token: token
         })
 
     } catch (err){
@@ -88,23 +94,24 @@ exports.getUserProfile = async (req, res) => {
         const user = await User.findById(req.params.id).select('-password');
         console.log('test brow, ')
 
-        const member = await Member.Member.findOne({'email':user.email})
+        const member = await Member.findOne({'email':user.email})
         console.log('nyampe bikin member')
+        console.log('nama member: ', member.full_name)
 
-        var response = new Member.MemberResponse({
+        let result = {
             full_name: member.full_name,
             user_name: user.user_name,
             birth_date: member.birth_date,
-            phone_number: member.phone_number,
+            phone: member.phone,
             email: user.email,
             address: member.address,
             balance: member.balance
-        })
+        }
         
         res.status(200).json({
             status: '200',
             message: 'Success!',
-            data: response
+            data: result
         });
     } catch (err) {
         console.error(err.message);
