@@ -3,6 +3,7 @@ const Book = require('./../models/bookModel');
 const Courier = require('./../models/courierModel')
 const MonthIncome = require('./../models/monthIncome')
 const Member = require('./../models/memberModel')
+const mongoose = require('mongoose');
 
 exports.addBook = async (req,res) => {
     try {
@@ -22,7 +23,7 @@ exports.addBook = async (req,res) => {
 }
 
 exports.getUnapprovedBorrowing = async (req,res) => {
-    const { admin_branch } = req.body
+    // const { admin_branch } = req.body <- ini buat cek branch kurir tapi nanti deh 
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
         const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
@@ -44,7 +45,7 @@ exports.getUnapprovedBorrowing = async (req,res) => {
 }
 
 exports.getUnapprovedReturn = async (req,res) => {
-    const { admin_branch } = req.body
+    // const { admin_branch } = req.body <- ini buat cek branch kurir tapi nanti deh 
     try {
         const returnedData = await Transaction.find({status: 'return_process'}, 'returned_date books');
         const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
@@ -88,7 +89,7 @@ exports.getAllTransactionTest = async (req, res) => {
 //buat get income seengaknya harus tau price n fee dari masing masing transaction
 exports.getIncomeTest = async (req, res) => {
     try {
-        const transaction = await Transaction.find({}, 'price fee borrow_date').populate('books')
+        const transaction = await Transaction.find({}, 'price fee borrow_date')
         res.status(201).json({
             status: 'success',
             results: transaction.length,
@@ -105,20 +106,48 @@ exports.getIncomeTest = async (req, res) => {
 }
 
 //buat top up setidaknya harus tau data pengguna dan balance yang mereka punya sekarang
-exports.getMemberTest = async (req, res) => {
+// exports.getMemberTest = async (req, res) => {
+//     try {
+//         // const member = await Member.findOne({member_id:mongoose.Types.ObjectId("6433780767449341884299cc")})
+//         const member = await Member.find({},'member_id balance')
+//         console.log(member[0].member_id.toString() === "6433780767449341884299cc")
+//         res.status(201).json({
+//             status: 'success',
+//             results: member.length,
+//             data: {
+//                 members: member
+//             }
+//         })
+//     } catch {
+//         res.status(400).json({
+//             status: 'fail',
+//             message: 'Invalid data sent!'
+//         })
+//     }
+// }
+exports.topUpUserBalance = async (req, res) => {
+    //sementara gini dulu idenya
     try {
-        const member = await Member.find({}, 'member_id balance').populate('books')
-        res.status(201).json({
+        var temp = -1
+        var members = await Member.find({},'member_id balance')
+        for(var i = 0; i < members.length; i++) {
+            if(members[i].member_id.toString() == req.params.id) {
+                members[i].balance += Number(req.body.top_up_value)
+                await members[i].save();
+                temp = i
+            }
+        }
+        members = await Member.find({},'member_id balance')
+        res.status(200).json({
             status: 'success',
-            results: transaction.length,
             data: {
-                transactions: transaction
+                updated_member: members[temp]
             }
         })
-    } catch {
+    } catch (err) {
         res.status(400).json({
             status: 'fail',
-            message: 'Invalid data sent!'
+            message: 'Update error!!\n' + err.message
         })
     }
 }
