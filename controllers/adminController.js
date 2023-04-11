@@ -98,6 +98,34 @@ exports.getAllTransactionTest = async (req, res) => {
     }
 }
 
+// exports.changeBorrowingState = async (req,res) => {
+//     const { state_type, courier_id, transaction_id, delivery_fee } = req.body
+//     try {
+//         const transaction = await Transaction.findById(transaction_id).populate('books')
+//         // await Transaction.updateOne(req.params.id, {$inc: { price: parseInt(delivery_fee)}}, {new: true});
+//         for (var i = 0; i < transaction.books.length; i++) {
+//             // const result = await Transaction.updateOne(req.params.id, {status: state_type});
+            
+//             // if (result.nModified !== 0) {
+//             if (state_type === "returned") {
+//                 transaction.books[i] = await Book.findByIdAndUpdate(transaction.books[i],{$inc: {stock: 1}}, {new: true, runValidators: true})
+//             } 
+//             count += result.nModified;
+//         }
+//         await Courier.findByIdAndUpdate(courier_id,{status: "available"},{new: true, runValidators: true})
+//         transaction.price += Number(delivery_fee)
+//         transaction.status = state_type
+//         res.status(201).json({
+//             status: 'success'
+//         })
+//     } catch {
+//         res.status(400).json({
+//             status: 'fail',
+//             message: 'Update Failed!'
+//         })
+//     }
+// }
+
 //buat get income seengaknya harus tau price n fee dari masing masing transaction
 exports.getIncomeTest = async (req, res) => {
     try {
@@ -163,31 +191,6 @@ exports.topUpUserBalance = async (req, res) => {
         })
     }
 }
-
-// exports.changeBorrowingState = async (req,res) => {
-//     const { state_type, courier_id, stock_id, transaction_id, delivery_fee } = req.body
-//     try {
-//         const stockIds = stock_id.split(",")
-//         await Transaction.updateOne(req.params.id, {$inc: { price: parseInt(delivery_fee)}}, {new: true});
-//         for (let i = 0; i < stockIds.length; i++) {
-//             const result = await Transaction.updateOne(req.params.id, {status: state_type});
-
-//             if (result.nModified !== 0) {
-//                 if (state_type === "returned") {
-//                     await Book.updateOne({_id: stockIds[i]}, {$inc: {stock: 1}});
-//                 }
-//                 count += result.nModified;
-//             }
-
-//             if (count === stockIds.length) {
-                
-//             }
-//         }
-        
-//     } catch {
-
-//     }
-// }
 
 // exports.getIncome = async (req, res) => {
 //     try {
