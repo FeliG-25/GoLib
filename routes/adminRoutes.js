@@ -14,8 +14,17 @@ router
 .route('/returnApprove')
 .get(adminController.getUnapprovedReturn);
 
+//ini masih buat sementara dulu <buat testing aja data yang di get apa aja>
 router
 .route('/transactions')
 .get(adminController.getAllTransactionTest);
+
+router
+.route('/incomeTest')
+.get(adminController.getIncomeTest);
+
+router
+.route('/topUpTest')
+.get(adminController.getMemberTest);
 
 module.exports = router;
