@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 const book = require('./bookModel');
 
 const transactionSchema = new mongoose.Schema({
-    books: {
-        type: [book.schema],
+    books: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Book',
         required: [true, 'Transaction data must have name']
-    },
+    }],
     borrow_date: {
         type: Date,
         required: [true, 'Transaction data must have borrowing date']
@@ -24,6 +25,9 @@ const transactionSchema = new mongoose.Schema({
     },
     fee: {
         type: Number
+    },
+    status: {
+        type: String
     }
 
 });

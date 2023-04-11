@@ -5,7 +5,9 @@ const Cart = require('./cartModel');
 
 const memberSchema = new mongoose.Schema({
     member_id: {
-        type: String
+        type: mongoose.Schema.Types.ObjectId,
+        res: 'User',
+        required: [true, 'couriers can\'t be empty']
     },
     full_name: {
         type: String,
@@ -30,12 +32,14 @@ const memberSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Member address can\'t be empty']
     },
-    transactions: {
-        type: [Transaction.schema],
+    transactions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transaction',
         required: false
-    },
+    }],
     cart: {
-        type: Cart.schema,
+        type: mongoose.Schema.Types.Cart,
+        ref: 'Cart',
         required: [false, 'Member must have one active cart']
     }
 });

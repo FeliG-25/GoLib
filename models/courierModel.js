@@ -17,9 +17,10 @@ const courierSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Courier must have spesific status']
     },
-    branch_name: {
-        type: String,
-        required: [true, 'Courier must in spesific branch']
+    branchs: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Branch',
+        required: [true, 'admin must in spesific branch']
     }
 });
 
