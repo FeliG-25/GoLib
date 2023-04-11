@@ -14,6 +14,9 @@ router
 .route('/returnApprove')
 .get(adminController.getUnapprovedReturn);
 
+router
+.route('/:id')
+.put(adminController.topUpUserBalance)
 //ini masih buat sementara dulu <buat testing aja data yang di get apa aja>
 router
 .route('/transactions')
@@ -23,8 +26,8 @@ router
 .route('/incomeTest')
 .get(adminController.getIncomeTest);
 
-router
-.route('/topUpTest')
-.get(adminController.getMemberTest);
+// router
+// .route('/topUpTest')
+// .get(adminController.getMemberTest);
 
 module.exports = router;

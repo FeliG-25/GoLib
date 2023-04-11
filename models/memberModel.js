@@ -4,7 +4,7 @@ const memberSchema = new mongoose.Schema({
     member_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, 'couriers can\'t be empty']
+        required: [true, 'Member ID can\'t be empty']
     },
     full_name: {
         type: String,
@@ -41,17 +41,17 @@ const memberSchema = new mongoose.Schema({
     }
 });
 
-const MemberResponseSchema = new mongoose.Schema({
-    user_name: String,
-    birth_date: String,
-    phone_number: String,
-    email: String,
-    addres: String,
-    balance: String,
-    full_name: String,
-})
+// const MemberResponseSchema = new mongoose.Schema({
+//     user_name: String,
+//     birth_date: String,
+//     phone_number: String,
+//     email: String,
+//     addres: String,
+//     balance: String,
+//     full_name: String,
+// })
 
 const Member = mongoose.model('Member', memberSchema);
-const MemberResponse = mongoose.model('Member Response', MemberResponseSchema);
+// const MemberResponse = mongoose.model('Member Response', MemberResponseSchema);
 
-module.exports = {Member, MemberResponse};
+module.exports = Member;
