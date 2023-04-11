@@ -22,9 +22,9 @@ router
 .route('/choose-courier/:id')
 .put(adminController.changeBorrowingState)
 //ini masih buat sementara dulu <buat testing aja data yang di get apa aja>
-router
-.route('/transactions')
-.get(adminController.getAllTransactionTest);
+// router
+// .route('/transactions')
+// .get(adminController.getAllTransactionTest);
 
 router
 .route('/incomeTest')
