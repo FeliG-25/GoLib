@@ -24,6 +24,9 @@ const transactionSchema = new mongoose.Schema({
     },
     fee: {
         type: Number
+    },
+    status: {
+        type: String
     }
 
 });
