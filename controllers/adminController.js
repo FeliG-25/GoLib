@@ -23,11 +23,17 @@ exports.addBook = async (req,res) => {
 }
 
 exports.getUnapprovedBorrowing = async (req,res) => {
-    // const { admin_branch } = req.body <- ini buat cek branch kurir tapi nanti deh 
+    const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
-        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
+        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name branch_id')
         
+        for(var i = 0; i < courierData.length; i++) {
+            if(courierData[i].branch_id.toString() !== admin_branch) {
+                courierData.splice(i,1)
+            }
+        }
+
         res.status(201).json({
             status: 'success',
             results: borrowsData.length,
@@ -45,10 +51,16 @@ exports.getUnapprovedBorrowing = async (req,res) => {
 }
 
 exports.getUnapprovedReturn = async (req,res) => {
-    // const { admin_branch } = req.body <- ini buat cek branch kurir tapi nanti deh 
+    const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const returnedData = await Transaction.find({status: 'return_process'}, 'returned_date books');
-        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
+        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name branch_id')
+
+        for(var i = 0; i < courierData.length; i++) {
+            if(courierData[i].branch_id.toString() !== admin_branch) {
+                courierData.splice(i,1)
+            }
+        }
 
         res.status(201).json({
             status: 'success',
@@ -61,7 +73,7 @@ exports.getUnapprovedReturn = async (req,res) => {
     } catch (err) {
         res.status(400).json({
             status: 'fail',
-            message: 'Invalid data sent!'
+            message: 'Invalid data sent!' + err
         })
     }
 }
