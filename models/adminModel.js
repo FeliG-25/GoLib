@@ -3,14 +3,18 @@ const Courier = require('./courierModel');
 
 const adminSchema = new mongoose.Schema({
     admin_id: {
-        type: String
-    },
-    couriers: {
-        type: [Courier.schema],
+        type: mongoose.Schema.Types.ObjectId,
+        res: 'User',
         required: [true, 'couriers can\'t be empty']
     },
-    branch_name: {
-        type: String,
+    couriers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        res: 'Courier',
+        required: [true, 'couriers can\'t be empty']
+    }],
+    branchs: {
+        type: mongoose.Schema.Types.ObjectId,
+        res: 'Branch',
         required: [true, 'admin must in spesific branch']
     }
 });

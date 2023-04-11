@@ -31,10 +31,6 @@ const bookSchema = new mongoose.Schema({
     stock: {
         type: Number,
         required: [true, 'Book must have specific stock']
-    },
-    branch_name: {
-        type: String,
-        required: [true, 'Book must in spesific branch']
     }
 });
 

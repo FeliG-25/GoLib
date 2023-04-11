@@ -2,12 +2,14 @@ const mongoose = require('mongoose');
 const MonthIncome = require('./monthIncome');
 
 const incomeSchema = new mongoose.Schema({
-    branch_name: {
-        type: String
+    branchs: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Branch',
+        required: [true, 'admin must in spesific branch']
     },
-    month_income: {
-        type: [MonthIncome.schema]
-    }
+    month_income: [{
+        type: MonthIncome.schema
+    }]
 });
 
 const Income = mongoose.model('Income', incomeSchema);
