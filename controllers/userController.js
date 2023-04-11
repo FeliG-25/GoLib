@@ -5,19 +5,21 @@ const dotenv = require('dotenv');
 const User = require('./../models/userModel');
 const Member = require('./../models/memberModel');
 
+const mongoose = require('mongoose')
+
 dotenv.config({path: './config.env'});
 
 
 exports.createUser = async (req, res) => {
-    const { user_name, password, email, user_type} = req.body;
+    const { email, password, full_name, user_name, birth_date, phone_number, address, balance, user_type } = req.body;
     try {
 
         // Check if username is already taken
-        const existingUser = await User.findOne({ user_name });
+        const existingUser = await User.findOne({ email });
         if (existingUser){
             return res.status(400).json({
                 status: 'fail',
-                message: 'Username is already taken'
+                message: 'Email is already taken'
             });
         }
 
@@ -41,11 +43,11 @@ exports.createUser = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-    const { user_name, password } = req.body;
+    const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({user_name});
-        const member = await Member.findOne({user_name});
+        const user = await User.findOne({email});
+        const member = await Member.Member.findOne({email});
 
         //If there is no user
         if (!user && !member){
@@ -78,6 +80,35 @@ exports.login = async (req, res) => {
         res.status(500).json({
             message: 'Internal server error'
         });
+    }
+}
+
+exports.getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        console.log('test brow, ')
+
+        const member = await Member.Member.findOne({'email':user.email})
+        console.log('nyampe bikin member')
+
+        var response = new Member.MemberResponse({
+            full_name: member.full_name,
+            user_name: user.user_name,
+            birth_date: member.birth_date,
+            phone_number: member.phone_number,
+            email: user.email,
+            address: member.address,
+            balance: member.balance
+        })
+        
+        res.status(200).json({
+            status: '200',
+            message: 'Success!',
+            data: response
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
