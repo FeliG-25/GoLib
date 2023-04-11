@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
-const User = require('./userModel');
-const Transaction = require('./transactionModel');
-const Cart = require('./cartModel');
 
 const memberSchema = new mongoose.Schema({
     member_id: {
         type: mongoose.Schema.Types.ObjectId,
-        res: 'User',
+        ref: 'User',
         required: [true, 'couriers can\'t be empty']
     },
     full_name: {
@@ -38,7 +35,7 @@ const memberSchema = new mongoose.Schema({
         required: false
     }],
     cart: {
-        type: mongoose.Schema.Types.Cart,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Cart',
         required: [false, 'Member must have one active cart']
     }
