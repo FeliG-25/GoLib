@@ -130,3 +130,24 @@ exports.getAllUsers = async (req, res) => {
         })
     }
 }
+
+exports.updateUserProfile = async (req, res) => {
+    try{
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(201).json({
+            status: 'success',
+            data: {
+                user
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        })
+    }
+}
