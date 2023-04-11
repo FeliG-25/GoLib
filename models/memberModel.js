@@ -4,7 +4,7 @@ const memberSchema = new mongoose.Schema({
     member_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, 'Member ID can\'t be empty']
+        required: [false, 'Member ID can\'t be empty']
     },
     full_name: {
         type: String,
