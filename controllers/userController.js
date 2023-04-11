@@ -16,6 +16,7 @@ exports.createUser = async (req, res) => {
 
         // Check if username is already taken
         const existingUser = await User.findOne({ email });
+        
         if (existingUser){
             return res.status(400).json({
                 status: 'fail',
@@ -23,17 +24,23 @@ exports.createUser = async (req, res) => {
             });
         }
 
+        let savedUser = User
+
         const newMember = await Member.create(req.body);
         const newUser = new User({user_name, password, email, user_type})
-        await newUser.save();
-        
-        // const newUser = await User.create(req.body);
+        await newUser.save().then(user => {
+            console.log("Added new user: ", user);
+            newMember.member_id = user._id
+            newMember.save()
+            savedUser = user;
+        });
         
         res.status(201).json({
             status: 201,
             message: 'Registered! Please Login'
         });
     } catch (err) {
+        console.log(err)
         res.status(400).json({
             status:'Register Failed!',
             message: err
@@ -71,14 +78,14 @@ exports.login = async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
 
         res.status(300).json({
-            status:200,
-            user: user,
-            member: member,
-            token: token
-
-            // status: 200,
-            // message: "Success! Welcome " + user.user_name,
+            // status:200,
+            // user: user,
+            // member: member,
             // token: token
+
+            status: 200,
+            message: "Success! Welcome back, " + member.full_name + "!",
+            token: token
         })
 
     } catch (err){
