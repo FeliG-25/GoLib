@@ -26,13 +26,13 @@ exports.getUnapprovedBorrowing = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
-        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name branch_id')
+        const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
         
-        for(var i = 0; i < courierData.length; i++) {
-            if(courierData[i].branch_id.toString() !== admin_branch) {
-                courierData.splice(i,1)
-            }
-        }
+        // for(var i = 0; i < courierData.length; i++) {
+        //     if(courierData[i].branch_id.toString() !== admin_branch) {
+        //         courierData.splice(i,1)
+        //     }
+        // }
 
         res.status(201).json({
             status: 'success',
@@ -54,13 +54,7 @@ exports.getUnapprovedReturn = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const returnedData = await Transaction.find({status: 'return_process'}, 'returned_date books');
-        const courierData = await Courier.find({courier_status: 'available'}, 'courier_name branch_id')
-
-        for(var i = 0; i < courierData.length; i++) {
-            if(courierData[i].branch_id.toString() !== admin_branch) {
-                courierData.splice(i,1)
-            }
-        }
+        const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
 
         res.status(201).json({
             status: 'success',
@@ -80,20 +74,53 @@ exports.getUnapprovedReturn = async (req,res) => {
 
 //dari sini kebawah itu untuk testing aja memahami gimana penyimpanan di db nya gitu :)
 //buat change borrowing state harus tau isi transactionnya dulu jadi kita coba get all transactions
-exports.getAllTransactionTest = async (req, res) => {
+// exports.getAllTransactionTest = async (req, res) => {
+//     try {
+//         const transaction = await Transaction.find({}).populate('books')
+//         res.status(201).json({
+//             status: 'success',
+//             results: transaction.length,
+//             data: {
+//                 transactions: transaction
+//             }
+//         })
+//     } catch {
+//         res.status(400).json({
+//             status: 'fail',
+//             message: 'Invalid data sent!'
+//         })
+//     }
+// }
+
+exports.changeBorrowingState = async (req,res) => {
+    const { state_type, courier_id, delivery_fee } = req.body
     try {
-        const transaction = await Transaction.find({}).populate('books')
+        const transactionData = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+        // await Transaction.updateOne(req.params.id, {$inc: { price: parseInt(delivery_fee)}}, {new: true});
+        for (var i = 0; i < transactionData.books.length; i++) {
+            // const result = await Transaction.updateOne(req.params.id, {status: state_type});
+            
+            if (state_type === "returned") {
+                await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
+            } 
+        }
+        await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "available"})
+        transactionData.price += Number(delivery_fee)
+        transactionData.status = state_type
+        const temp_over_due_date = Math.floor((transactionData.returned_date - transactionData.deadline_date)/(1000*60*70*24))
+        if (temp_over_due_date > 0) {
+            transactionData.fee = temp_over_due_date * 10000
+        }
+        await transactionData.save()
+        const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
         res.status(201).json({
             status: 'success',
-            results: transaction.length,
-            data: {
-                transactions: transaction
-            }
+            data: updated_trans
         })
-    } catch {
+    } catch (err) {
         res.status(400).json({
             status: 'fail',
-            message: 'Invalid data sent!'
+            message: 'Update Failed!' + err
         })
     }
 }
@@ -140,20 +167,23 @@ exports.getIncomeTest = async (req, res) => {
 exports.topUpUserBalance = async (req, res) => {
     //sementara gini dulu idenya
     try {
-        var temp = -1
-        var members = await Member.find({},'member_id balance')
-        for(var i = 0; i < members.length; i++) {
-            if(members[i].member_id.toString() == req.params.id) {
-                members[i].balance += Number(req.body.top_up_value)
-                await members[i].save();
-                temp = i
-            }
-        }
-        members = await Member.find({},'member_id balance')
+        const member_old = await Member.findOne({member_id:mongoose.Types.ObjectId(req.params.id)}, 'balance')
+        const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
+        // var temp = -1
+        // var members = await Member.find({},'member_id balance')
+        // for(var i = 0; i < members.length; i++) {
+        //     if(members[i].member_id.toString() == req.params.id) {
+        //         members[i].balance += Number(req.body.top_up_value)
+        //         await members[i].save();
+        //         temp = i
+        //     }
+        // }
+        // members = await Member.find({},'member_id balance')
         res.status(200).json({
             status: 'success',
             data: {
-                updated_member: members[temp]
+                old_data: member_old,
+                updated_data: member_new
             }
         })
     } catch (err) {
@@ -163,31 +193,6 @@ exports.topUpUserBalance = async (req, res) => {
         })
     }
 }
-
-// exports.changeBorrowingState = async (req,res) => {
-//     const { state_type, courier_id, stock_id, transaction_id, delivery_fee } = req.body
-//     try {
-//         const stockIds = stock_id.split(",")
-//         await Transaction.updateOne(req.params.id, {$inc: { price: parseInt(delivery_fee)}}, {new: true});
-//         for (let i = 0; i < stockIds.length; i++) {
-//             const result = await Transaction.updateOne(req.params.id, {status: state_type});
-
-//             if (result.nModified !== 0) {
-//                 if (state_type === "returned") {
-//                     await Book.updateOne({_id: stockIds[i]}, {$inc: {stock: 1}});
-//                 }
-//                 count += result.nModified;
-//             }
-
-//             if (count === stockIds.length) {
-                
-//             }
-//         }
-        
-//     } catch {
-
-//     }
-// }
 
 // exports.getIncome = async (req, res) => {
 //     try {
