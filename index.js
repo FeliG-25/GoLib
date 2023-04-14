@@ -3,6 +3,7 @@ const cors = require('cors');
 const userRouter = require('./routes/userRoutes');
 const adminRouter = require('./routes/adminRoutes');
 const bookRouter = require('./routes/bookRoutes');
+const memberRouter = require('./routes/memberRoutes');
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use((req,res,next) => {
 
 // routes for users
 app.use('/api/v1', userRouter)
+app.use('/api/v1/member', memberRouter)
 
 // routes for admin
 app.use('/api/v1/admin', adminRouter)
