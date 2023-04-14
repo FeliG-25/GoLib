@@ -1,4 +1,10 @@
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const dotenv = require('dotenv')
+
 const Book = require('./../models/bookModel');
+
+const mongoose = require('mongoose')
 
 exports.getAllBooks = async (req, res) => {
     try{
