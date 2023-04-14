@@ -5,6 +5,7 @@ const dotenv = require('dotenv')
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
 const Cart = require('./../models/cartModel')
+const Transaction = require('./../models/transactionModel')
 
 const mongoose = require('mongoose')
 
@@ -14,7 +15,7 @@ exports.getUserCart = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         const member = await Member.findOne({'member_id':user._id})
-        const cart = await Cart.findOne({'_id':member.cart});
+        const cart = await Cart.find({'_id':member.cart});
         
         res.status(200).json({
             status: '200',
@@ -29,12 +30,14 @@ exports.getUserCart = async (req, res) => {
 
 exports.getUserTransaction = async (req, res) => {
     try {
-        const transactions = await Member.findById(req.params.id).select("transactions")
+        const user = await User.findById(req.params.id);
+        const member = await Member.findOne({'member_id':user._id});
+        const transaction = await Transaction.find({'_id':member.transactions});
         
         res.status(200).json({
             status: '200',
             message: 'Success!',
-            data: transactions
+            data: transaction
         });
     } catch (err) {
         console.error(err.message);
