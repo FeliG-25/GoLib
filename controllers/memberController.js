@@ -37,3 +37,17 @@ exports.getUserTransaction = async (req, res) => {
         res.status(500).send('server error');
     }
 }
+
+exports.returnBook = async (req, res) => {
+    try {
+        
+        res.status(200).json({
+            status: '200',
+            message: 'Success!'
+            // data: transactions
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+}
