@@ -15,11 +15,8 @@ router
 
 // Need auth
 router
-.route('/member/profile/:id')
-.get(auth, userController.getUserProfile);
-router
 .route('/profile/:id')
-.patch(userController.updateUserProfile);
-
+.get(auth, userController.getUserProfile)
+.patch(auth, userController.updateUserProfile);
 
 module.exports = router;
