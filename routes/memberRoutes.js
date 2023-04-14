@@ -7,5 +7,11 @@ const router = express.Router();
 router
 .route('/cart/:id')
 .get(auth, memberController.getUserCart);
+router
+.route('/transaction/:id')
+.get(auth, memberController.getUserTransaction);
+router
+.route('/book/return/:id')
+.post(auth, memberController.returnBook)
 
 module.exports = router;
