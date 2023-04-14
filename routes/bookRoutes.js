@@ -6,11 +6,11 @@ const router = express.Router();
 // without params
 router
 .route('/all')
-.get(auth, bookController.getAllBooks);
+.get(bookController.getAllBooks);
 
 // with params
 router
 .route('/:id')
-.get(auth, bookController.getBook);
+.get(bookController.getBook);
 
 module.exports = router;
