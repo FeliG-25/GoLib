@@ -57,18 +57,21 @@ exports.returnBook = async (req, res) => {
             });
         }
 
+        const date = JSON.stringify(new Date().toJSON());
+
         const updateTransaction = await Transaction.updateOne(
             { _id: selectedTransaction._id },
             { $set:
                 {
-                    status: 'return_process'
+                    status: 'return_process',
+                    returned_date: date.substring(0, 10)
                 }
             }
         )
 
         let result = {
             _id: selectedTransaction._id,
-            status: 'Waiting for return approval'
+            status_message: 'Waiting for return approval'
         }
 
         res.status(200).json({
