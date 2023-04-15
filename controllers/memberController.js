@@ -61,25 +61,14 @@ exports.returnBook = async (req, res) => {
             { _id: selectedTransaction._id },
             { $set:
                 {
-                    status: 'returned'
+                    status: 'return_process'
                 }
             }
         )
 
-        // Increased Book Stock
-        // const selectedBooks = await Book.find({'_id':selectedTransaction.books})
-        // const updateBooks = await Book.updateMany(
-        //     { _id: selectedBooks._id },
-        //     { $set:
-        //         {
-        //             stock: (selectedBooks.stock+1)
-        //         }
-        //     }
-        // )
-
         let result = {
             _id: selectedTransaction._id,
-            status: 'returned'
+            status: 'Waiting for return approval'
         }
 
         res.status(200).json({
