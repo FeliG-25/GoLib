@@ -4,10 +4,11 @@ const dotenv = require('dotenv')
 
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
-
+// let activeUser = new User("", "", "", "")
 const mongoose = require('mongoose')
 
 dotenv.config({path: './config.env'});
+
 
 
 exports.createUser = async (req, res) => {
@@ -74,7 +75,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        const payload = {user: {id: user.id}};
+        activeUser = user
+        const payload = {"id": userId};
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
 
         res.status(300).json({
@@ -88,19 +90,22 @@ exports.login = async (req, res) => {
             token: token
         })
 
+        
+
     } catch (err){
         console.error(err);
         res.status(500).json({
             message: 'Internal server error'
         });
     }
+
 }
 
 exports.getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
-        const member = await Member.findOne({'member_id':user._id})
-        
+        const member = await Member.findOne({'member_id': user._id})
+
         let result = {
             full_name: member.full_name,
             user_name: user.user_name,
@@ -127,7 +132,6 @@ exports.getAllUsers = async (req, res) => {
         const users = await user.find({});
 
         res.status(200).json({
-            status: 'ini kmn si bro nyambungnya',
             result: users.length,
             data: {
                 users
@@ -136,7 +140,7 @@ exports.getAllUsers = async (req, res) => {
     } catch (err) {
         res.status(400).json({
             status:'fail',
-            message: 'gagal bosquw'
+            message: 'Failed to get users'
         })
     }
 }

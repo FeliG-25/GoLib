@@ -41,17 +41,7 @@ const memberSchema = new mongoose.Schema({
     }
 });
 
-// const MemberResponseSchema = new mongoose.Schema({
-//     user_name: String,
-//     birth_date: String,
-//     phone_number: String,
-//     email: String,
-//     addres: String,
-//     balance: String,
-//     full_name: String,
-// })
 
 const Member = mongoose.model('Member', memberSchema);
-// const MemberResponse = mongoose.model('Member Response', MemberResponseSchema);
 
 module.exports = Member;

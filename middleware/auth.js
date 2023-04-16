@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
+const userController = require('./../controllers/userController')
 
 function auth (req, res, next) {
     const token = req.header('Authorization');
@@ -10,9 +11,7 @@ function auth (req, res, next) {
 
     try {
         const decoded = jwt.verify(token, process.env.SECRET)
-        // console.log("decoded email: "+decoded.user)
-        req.user = decoded.user;
-        console.log("decoded email: "+decoded.user)
+        req = decoded;
         next()
     } catch (err) {
         console.log(err)
