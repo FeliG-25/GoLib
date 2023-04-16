@@ -17,6 +17,15 @@ router
 router
 .route('/profile/:id')
 .get(auth, userController.getUserProfile)
+
+router
+.route('/member/password/edit/:id')
+.patch(auth, userController.updateUserPassword);
+
+router
+.route('/member/profile/edit/:id')
 .patch(auth, userController.updateUserProfile);
+
+
 
 module.exports = router;

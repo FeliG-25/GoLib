@@ -4,7 +4,6 @@ const dotenv = require('dotenv')
 
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
-// let activeUser = new User("", "", "", "")
 const mongoose = require('mongoose')
 
 dotenv.config({path: './config.env'});
@@ -80,11 +79,6 @@ exports.login = async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
 
         res.status(300).json({
-            // status:200,
-            // user: user,
-            // member: member,
-            // token: token
-
             status: 200,
             message: "Success! Welcome back, " + member.full_name + "!",
             token: token
@@ -145,12 +139,38 @@ exports.getAllUsers = async (req, res) => {
     }
 }
 
+exports.updateUserPassword = async (req, res) => {
+    try{
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(201).json({
+            status: 'success',
+            data: {
+                user
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        })
+    }
+}
+
 exports.updateUserProfile = async (req, res) => {
     try{
         const user = await User.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
+
+        const member = await Member.findOneAndUpdate({'member_id':user._id}, req.body, {
+            new:true,
+            runValidators: true
+        })
 
         res.status(201).json({
             status: 'success',
