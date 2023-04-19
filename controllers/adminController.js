@@ -1,3 +1,8 @@
+const { google } = require('googleapis');
+const fs = require('fs');
+const path = require('path');
+const mime = require('mime');
+const credentials = require('../credential.json');
 const Transaction = require('../models/transactionModel');
 const Book = require('./../models/bookModel');
 const Courier = require('./../models/courierModel')
@@ -7,6 +12,36 @@ const mongoose = require('mongoose');
 
 exports.addBook = async (req,res) => {
     try {
+        const auth = new google.auth.GoogleAuth({
+            credentials: credentials,
+            scopes: ['https://www.googleapis.com/auth/drive.file'],
+        });
+        
+        const drive = google.drive({ version: 'v3', auth });
+
+        const fileName = path.basename(req.body.cover_path)
+        const mimeType = mime.getType(req.body.cover_path)
+
+        if (!fileName || !mimeType) {
+            throw new Error('Gagal mendapatkan nama file atau tipe MIME');
+        }
+
+        const fileMetadata = {
+            name: fileName,
+            mimeType: mimeType,
+            parents: ['1TGmjhNF5Ud-8t8nz5Lw-7VbHssFY7lfS']
+        };
+        const media = {
+            mimeType: mimeType,
+            body: fs.createReadStream(req.body.cover_path)
+        };
+        const uploadedFile = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id'
+        });
+        req.body.cover_path = uploadedFile.data.id.toString();
+
         const newBook = await Book.create(req.body)
         res.status(201).json({
             status: 'success add new book',
@@ -27,12 +62,6 @@ exports.getUnapprovedBorrowing = async (req,res) => {
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
         const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
-        
-        // for(var i = 0; i < courierData.length; i++) {
-        //     if(courierData[i].branch_id.toString() !== admin_branch) {
-        //         courierData.splice(i,1)
-        //     }
-        // }
 
         res.status(201).json({
             status: 'success',
@@ -72,26 +101,6 @@ exports.getUnapprovedReturn = async (req,res) => {
     }
 }
 
-//dari sini kebawah itu untuk testing aja memahami gimana penyimpanan di db nya gitu :)
-//buat change borrowing state harus tau isi transactionnya dulu jadi kita coba get all transactions
-// exports.getAllTransactionTest = async (req, res) => {
-//     try {
-//         const transaction = await Transaction.find({}).populate('books')
-//         res.status(201).json({
-//             status: 'success',
-//             results: transaction.length,
-//             data: {
-//                 transactions: transaction
-//             }
-//         })
-//     } catch {
-//         res.status(400).json({
-//             status: 'fail',
-//             message: 'Invalid data sent!'
-//         })
-//     }
-// }
-
 exports.changeBorrowingState = async (req,res) => {
     const { state_type, courier_id, delivery_fee } = req.body
     try {
@@ -112,6 +121,7 @@ exports.changeBorrowingState = async (req,res) => {
             transactionData.fee = temp_over_due_date * 10000
         }
         await transactionData.save()
+        //potong saldo user
         const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
         res.status(201).json({
             status: 'success',
@@ -125,60 +135,11 @@ exports.changeBorrowingState = async (req,res) => {
     }
 }
 
-//buat get income seengaknya harus tau price n fee dari masing masing transaction
-exports.getIncomeTest = async (req, res) => {
-    try {
-        const transaction = await Transaction.find({}, 'price fee borrow_date')
-        res.status(201).json({
-            status: 'success',
-            results: transaction.length,
-            data: {
-                transactions: transaction
-            }
-        })
-    } catch {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Invalid data sent!'
-        })
-    }
-}
-
-//buat top up setidaknya harus tau data pengguna dan balance yang mereka punya sekarang
-// exports.getMemberTest = async (req, res) => {
-//     try {
-//         // const member = await Member.findOne({member_id:mongoose.Types.ObjectId("6433780767449341884299cc")})
-//         const member = await Member.find({},'member_id balance')
-//         console.log(member[0].member_id.toString() === "6433780767449341884299cc")
-//         res.status(201).json({
-//             status: 'success',
-//             results: member.length,
-//             data: {
-//                 members: member
-//             }
-//         })
-//     } catch {
-//         res.status(400).json({
-//             status: 'fail',
-//             message: 'Invalid data sent!'
-//         })
-//     }
-// }
 exports.topUpUserBalance = async (req, res) => {
-    //sementara gini dulu idenya
     try {
         const member_old = await Member.findOne({member_id:mongoose.Types.ObjectId(req.params.id)}, 'balance')
         const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
-        // var temp = -1
-        // var members = await Member.find({},'member_id balance')
-        // for(var i = 0; i < members.length; i++) {
-        //     if(members[i].member_id.toString() == req.params.id) {
-        //         members[i].balance += Number(req.body.top_up_value)
-        //         await members[i].save();
-        //         temp = i
-        //     }
-        // }
-        // members = await Member.find({},'member_id balance')
+
         res.status(200).json({
             status: 'success',
             data: {
@@ -194,60 +155,34 @@ exports.topUpUserBalance = async (req, res) => {
     }
 }
 
-// exports.getIncome = async (req, res) => {
-//     try {
-//         const incomes = await MonthIncome.aggregate([
-//             {
-//                 $match: {
-//                     'books.branchId': branch_id
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                     from: 'transaction',
-//                     localField: 'transaction._id',
-//                     foreignField: 'transaction._id',
-//                     as: 'transaction'
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                   from: 'books',
-//                   localField: 'borrowslist.books._id',
-//                   foreignField: 'books._id',
-//                   as: 'stocks'
-//                 }
-//             },
-//             {
-//                 $group: {
-//                   _id: {
-//                     borrowId: '$transaction._id',
-//                     branchId: '$books.branch_id',
-//                     month: { $month: '$transaction.borrow_date' }
-//                   },
-//                   MonthName: { $first: { $monthName: '$transaction.borrow_date' } },
-//                   SumBorrows: { $sum: '$transaction._id' },
-//                   Income: { $sum: '$transaction.price' }
-//                 }
-//             },
-//             {
-//                 $sort: {
-//                   '_id.month': 1,
-//                   '_id.branchId': 1
-//                 }
-//             }
-//         ])
-//     } catch {
+exports.getIncome = async (req, res) => {
+    try {
+        const monthTransactions = await await Transaction.find({}, 'price fee borrow_date')
+        var monthIncomes = new Array(12)
+        for (var i = 0; i < 12; i++) {
+            monthIncomes[i] = new MonthIncome({
+                month_name: new Date(0, (i)).toLocaleString('default', { month: 'long' }),
+                sum_borrows: 0,
+                month_incomes: 0
+            })
+        }
 
-//     }
-// }
+        for(var i = 0; i < monthTransactions.length; i++) {
+            var temp = monthTransactions[i].borrow_date.getMonth()
+            monthIncomes[temp].sum_borrows += 1
+            monthIncomes[temp].sum_borrows += monthTransactions[i].price + monthTransactions[i].fee
+        }
 
-// exports.topUpUserBalance = async (req, res) => {
-//     const {user_id, top_up_value} = req.body
-//     try {
-//         await Member.updateOne({_id: user_id}, {$inc: { balance: parseInt(top_up_value)}}, {new: true});
-//     } catch {
-
-//     }
-// }
-
+        res.status(200).json({
+            status: 'success',
+            data: {
+                month_income: monthIncomes
+            }
+        })
+    } catch {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Update error!!\n' + err.message
+        })
+    }
+}

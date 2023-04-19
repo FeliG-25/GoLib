@@ -19,6 +19,10 @@ router
 .put(adminController.topUpUserBalance)
 
 router
+.route('/income')
+.get(adminController.getIncome)
+
+router
 .route('/choose-courier/:id')
 .put(adminController.changeBorrowingState)
 //ini masih buat sementara dulu <buat testing aja data yang di get apa aja>
