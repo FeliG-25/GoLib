@@ -141,22 +141,37 @@ exports.getAllUsers = async (req, res) => {
 
 exports.updateUserPassword = async (req, res) => {
     try{
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
+        const user = await User.findById(req.params.id);
 
-        res.status(201).json({
-            status: 'success',
-            data: {
-                user
-            }
-        });
+        const { current_pw, new_pw, confirm_new } = req.body
+        if (current_pw != user.password) {
+            return res.status(400).json({
+                status: 'fail',
+                message: "Current password doesn't match"
+            });
+        } else if ( new_pw != confirm_new ) {
+            return res.status(400).json({
+                status: 'fail',
+                message: "New password must match with confirm"
+            });
+        } else {
+            const upd_user = await User.findByIdAndUpdate(req.params.id, {password: new_pw}, {
+                new: true,
+                runValidators: true
+            });
+
+            res.status(201).json({
+                status: 'success',
+                data: {
+                    upd_user
+                }
+            });
+        }
     } catch (err) {
         res.status(400).json({
             status: 'fail',
             message: err
-        })
+        });
     }
 }
 
