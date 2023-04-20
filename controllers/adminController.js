@@ -111,18 +111,33 @@ exports.changeBorrowingState = async (req,res) => {
             
             if (state_type === "returned") {
                 await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
-            } 
+                
+            } else if (state_type === "borrowed") {
+                await Book.updateOne(transactionData.books[i],{$inc: {stock: -1}})
+            }
         }
-        await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "available"})
-        transactionData.price += Number(delivery_fee)
-        transactionData.status = state_type
-        const temp_over_due_date = Math.floor((transactionData.returned_date - transactionData.deadline_date)/(1000*60*70*24))
-        if (temp_over_due_date > 0) {
-            transactionData.fee = temp_over_due_date * 10000
+
+        if (state_type === "returned") {
+            await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "available"})
+            transactionData.price += Number(delivery_fee)
+            transactionData.status = state_type
+            const temp_over_due_date = Math.floor((transactionData.returned_date - transactionData.deadline_date)/(1000*60*70*24))
+            if (temp_over_due_date > 0) {
+                transactionData.fee = temp_over_due_date * 10000
+            }
+            await transactionData.save()
+            //potong saldo user
+            const member = await Member.findOne({transactions: transactions.findById(req.params.id)}).populate('transactions')
+            member.balance -= transactionData.fee
+            await member.save()
+            const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+        } else {
+            await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "unavailable"})
+            transactionData.status = state_type
+            await transactionData.save()
+            const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
         }
-        await transactionData.save()
-        //potong saldo user
-        const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+        
         res.status(201).json({
             status: 'success',
             data: updated_trans
