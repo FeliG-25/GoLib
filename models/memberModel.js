@@ -10,10 +10,6 @@ const memberSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Member must have spesific name']
     },
-    email: {
-        type: String,
-        required: [true, 'Member must have spesific email']
-    },
     balance: {
         type: Number,
         required: [true, 'Member must have spesific balance']

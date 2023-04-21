@@ -17,6 +17,7 @@ app.use((req,res,next) => {
 
 // routes for users
 app.use('/api/v1', userRouter)
+app.use('/api/v1', memberRouter)
 app.use('/api/v1/member', memberRouter)
 
 // routes for admin
