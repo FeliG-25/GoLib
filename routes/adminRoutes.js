@@ -32,7 +32,7 @@ router
 
 router
 .route('/incomeTest')
-.get(adminController.getIncomeTest);
+.get(adminController.getIncome);
 
 // router
 // .route('/topUpTest')

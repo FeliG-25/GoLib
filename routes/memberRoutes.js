@@ -16,5 +16,8 @@ router
 .route('/transaction/:id')
 .get(auth, memberController.getUserTransaction)
 .patch(auth, memberController.returnBook);
+router
+.route('/checkout/:id')
+.post(auth, memberController.checkOut);
 
 module.exports = router;
