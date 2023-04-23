@@ -12,43 +12,53 @@ const mongoose = require('mongoose');
 
 exports.addBook = async (req,res) => {
     try {
-        const auth = new google.auth.GoogleAuth({
-            credentials: credentials,
-            scopes: ['https://www.googleapis.com/auth/drive.file'],
-        });
-        
-        const drive = google.drive({ version: 'v3', auth });
-
-        const fileName = path.basename(req.body.cover_path)
-        const mimeType = mime.getType(req.body.cover_path)
-
-        if (!fileName || !mimeType) {
-            throw new Error('Gagal mendapatkan nama file atau tipe MIME');
-        }
-
-        const fileMetadata = {
-            name: fileName,
-            mimeType: mimeType,
-            parents: ['1TGmjhNF5Ud-8t8nz5Lw-7VbHssFY7lfS']
-        };
-        const media = {
-            mimeType: mimeType,
-            body: fs.createReadStream(req.body.cover_path)
-        };
-        const uploadedFile = await drive.files.create({
-            resource: fileMetadata,
-            media: media,
-            fields: 'id'
-        });
-        req.body.cover_path = uploadedFile.data.id.toString();
-
-        const newBook = await Book.create(req.body)
-        res.status(201).json({
-            status: 'success add new book',
-            data: {
-                book: newBook
+        const book = await Book.find({title: req.body.title, author: req.body.author});
+        if (book) {
+            //asumsinya untuk judul dan author itu cuma ada 1..
+            res.status(400).json({
+                status: 'failed to add new book',
+                message: "Book already exists!\n" + err
+            })
+        } else {
+            const auth = new google.auth.GoogleAuth({
+                credentials: credentials,
+                scopes: ['https://www.googleapis.com/auth/drive.file'],
+            });
+            
+            const drive = google.drive({ version: 'v3', auth });
+    
+            const fileName = path.basename(req.body.cover_path)
+            const mimeType = mime.getType(req.body.cover_path)
+    
+            if (!fileName || !mimeType) {
+                throw new Error('Gagal mendapatkan nama file atau tipe MIME');
             }
-        })
+    
+            const fileMetadata = {
+                name: fileName,
+                mimeType: mimeType,
+                parents: ['1TGmjhNF5Ud-8t8nz5Lw-7VbHssFY7lfS']
+            };
+            const media = {
+                mimeType: mimeType,
+                body: fs.createReadStream(req.body.cover_path)
+            };
+            const uploadedFile = await drive.files.create({
+                resource: fileMetadata,
+                media: media,
+                fields: 'id'
+            });
+            req.body.cover_path = uploadedFile.data.id.toString();
+    
+            const newBook = await Book.create(req.body)
+            res.status(201).json({
+                status: 'success add new book',
+                data: {
+                    book: newBook
+                }
+            })
+        }
+        
     } catch (err) {
         res.status(400).json({
             status: 'failed to add new book',
@@ -61,16 +71,23 @@ exports.getUnapprovedBorrowing = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
-        const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
-
-        res.status(201).json({
-            status: 'success',
-            results: borrowsData.length,
-            data: {
-                borrow: borrowsData,
-                courier: courierData
-            }
-        })
+        if (borrowsData) {
+            const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
+            res.status(201).json({
+                status: 'success',
+                results: borrowsData.length,
+                data: {
+                    borrow: borrowsData,
+                    courier: courierData
+                }
+            })
+        } else {
+            res.status(201).json({
+                status: 'success',
+                message: 'No transactions found in borrow_process status!'
+            })
+        }
+        
     } catch (err) {
         res.status(400).json({
             status: 'fail',
@@ -83,16 +100,22 @@ exports.getUnapprovedReturn = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const returnedData = await Transaction.find({status: 'return_process'}, 'returned_date books');
-        const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
-
-        res.status(201).json({
-            status: 'success',
-            results: returnedData.length,
-            data: {
-                borrow: returnedData,
-                courier: courierData
-            }
-        })
+        if (returnedData) {
+            const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
+            res.status(201).json({
+                status: 'success',
+                results: returnedData.length,
+                data: {
+                    borrow: returnedData,
+                    courier: courierData
+                }
+            })
+        } else {
+            res.status(201).json({
+                status: 'success',
+                message: 'No transactions found in return_process status!'
+            })
+        }
     } catch (err) {
         res.status(400).json({
             status: 'fail',
@@ -105,43 +128,57 @@ exports.changeBorrowingState = async (req,res) => {
     const { state_type, courier_id, delivery_fee } = req.body
     try {
         const transactionData = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
-        // await Transaction.updateOne(req.params.id, {$inc: { price: parseInt(delivery_fee)}}, {new: true});
-        for (var i = 0; i < transactionData.books.length; i++) {
-            // const result = await Transaction.updateOne(req.params.id, {status: state_type});
-            
-            if (state_type === "returned") {
-                await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
-                
-            } else if (state_type === "borrowed") {
-                await Book.updateOne(transactionData.books[i],{$inc: {stock: -1}})
+        
+        if (transactionData) {
+            //update books stocks
+            for (var i = 0; i < transactionData.books.length; i++) {
+                if (state_type === "returned") {
+                    await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
+                } else if (state_type === "borrowed") {
+                    await Book.updateOne(transactionData.books[i],{$inc: {stock: -1}})
+                }
             }
-        }
 
-        if (state_type === "returned") {
-            await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "available"})
-            transactionData.price += Number(delivery_fee)
-            transactionData.status = state_type
-            const temp_over_due_date = Math.floor((transactionData.returned_date - transactionData.deadline_date)/(1000*60*70*24))
-            if (temp_over_due_date > 0) {
-                transactionData.fee = temp_over_due_date * 10000
+            if (state_type === "returned") {
+                //update courier status
+                await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "unavailable"})
+                //update transaction
+                transactionData.price += Number(delivery_fee)
+                transactionData.status = state_type
+                const temp_over_due_date = Math.floor((transactionData.returned_date - transactionData.deadline_date)/(1000*60*70*24))
+                if (temp_over_due_date > 0) {
+                    transactionData.fee = temp_over_due_date * 10000
+                }
+                await transactionData.save()
+                //update member balance
+                const member = await Member.findOne({transactions: mongoose.Types.ObjectId(req.params.id)}).populate('transactions')
+                member.balance -= (transactionData.fee + Number(delivery_fee))
+                await member.save()
+            } else {
+                await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "unavailable"})
+                //update transaction
+                transactionData.price += Number(delivery_fee)
+                transactionData.status = state_type
+                await transactionData.save()
+                //update member balance
+                const member = await Member.findOne({transactions: mongoose.Types.ObjectId(req.params.id)}).populate('transactions')
+                console.log(member)
+                member.balance -= Number(delivery_fee)
+                await member.save()
             }
-            await transactionData.save()
-            //potong saldo user
-            const member = await Member.findOne({transactions: transactions.findById(req.params.id)}).populate('transactions')
-            member.balance -= transactionData.fee
-            await member.save()
+            //get updated transaction
             const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+            res.status(201).json({
+                status: 'success',
+                data: updated_trans
+            })
         } else {
-            await Courier.updateOne({"_id":mongoose.Types.ObjectId(courier_id)},{courier_status: "unavailable"})
-            transactionData.status = state_type
-            await transactionData.save()
-            const updated_trans = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+            res.status(400).json({
+                status: 'fail',
+                message: 'Transaction not found!'
+            })
         }
         
-        res.status(201).json({
-            status: 'success',
-            data: updated_trans
-        })
     } catch (err) {
         res.status(400).json({
             status: 'fail',
@@ -153,15 +190,23 @@ exports.changeBorrowingState = async (req,res) => {
 exports.topUpUserBalance = async (req, res) => {
     try {
         const member_old = await Member.findOne({member_id:mongoose.Types.ObjectId(req.params.id)}, 'balance')
-        const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
+        if (member_old) {
+            const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
 
-        res.status(200).json({
-            status: 'success',
-            data: {
-                old_data: member_old,
-                updated_data: member_new
-            }
-        })
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    old_data: member_old,
+                    updated_data: member_new
+                }
+            })
+        } else {
+            res.status(400).json({
+                status: 'fail',
+                message: 'Member not found!'
+            })
+        }
+        
     } catch (err) {
         res.status(400).json({
             status: 'fail',
