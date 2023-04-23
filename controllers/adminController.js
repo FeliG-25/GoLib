@@ -13,7 +13,13 @@ const mongoose = require('mongoose');
 exports.addBook = async (req,res) => {
     try {
         const book = await Book.find({title: req.body.title, author: req.body.author});
-        if (book.length) {
+        if (book) {
+            //asumsinya untuk judul dan author itu cuma ada 1..
+            res.status(400).json({
+                status: 'failed to add new book',
+                message: "Book already exists!\n" + err
+            })
+        } else {
             const auth = new google.auth.GoogleAuth({
                 credentials: credentials,
                 scopes: ['https://www.googleapis.com/auth/drive.file'],
@@ -51,12 +57,6 @@ exports.addBook = async (req,res) => {
                     book: newBook
                 }
             })
-        } else {
-            //asumsinya untuk judul dan author itu cuma ada 1..
-            res.status(400).json({
-                status: 'failed to add new book',
-                message: "Book already exists!\n" + err
-            })
         }
         
     } catch (err) {
@@ -71,7 +71,7 @@ exports.getUnapprovedBorrowing = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const borrowsData = await Transaction.find({status: 'borrow_process'}, 'borrow_date');
-        if (borrowsData.length > 0) {
+        if (borrowsData) {
             const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
             res.status(201).json({
                 status: 'success',
@@ -100,7 +100,7 @@ exports.getUnapprovedReturn = async (req,res) => {
     const { admin_branch } = req.body //<- ini buat cek branch kurir tapi nanti deh 
     try {
         const returnedData = await Transaction.find({status: 'return_process'}, 'returned_date books');
-        if (returnedData.length > 0) {
+        if (returnedData) {
             const courierData = await Courier.find({courier_status: 'available', branch_id: mongoose.Types.ObjectId(admin_branch)}, 'courier_name')
             res.status(201).json({
                 status: 'success',
@@ -190,7 +190,7 @@ exports.changeBorrowingState = async (req,res) => {
 exports.topUpUserBalance = async (req, res) => {
     try {
         const member_old = await Member.findOne({member_id:mongoose.Types.ObjectId(req.params.id)}, 'balance')
-        if (member_old.length > 0) {
+        if (member_old) {
             const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
 
             res.status(200).json({
