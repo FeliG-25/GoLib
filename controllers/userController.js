@@ -5,10 +5,10 @@ const dotenv = require('dotenv')
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
 const mongoose = require('mongoose')
+const ActiveUser = require ('./../models/activeUser')
+const Cart = require('../models/cartModel')
 
 dotenv.config({path: './config.env'});
-
-
 
 exports.createUser = async (req, res) => {
     const { email, password, full_name, user_name, birth_date, phone_number, address, balance, user_type } = req.body;
@@ -27,10 +27,12 @@ exports.createUser = async (req, res) => {
         let savedUser = User
 
         const newMember = await Member.create(req.body);
+        const newCart = await Cart.create({books: []});
         const newUser = new User({user_name, password, email, user_type})
         await newUser.save().then(user => {
             console.log("Added new user: ", user);
             newMember.member_id = user._id
+            newMember.cart = newCart._id
             newMember.save()
             savedUser = user;
         });
@@ -55,7 +57,6 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({email});
         const userId = user._id
-        console.log(userId);
         const member = await Member.findOne({'member_id': userId}).exec();
 
         //If there is no user
@@ -74,9 +75,11 @@ exports.login = async (req, res) => {
             });
         }
 
-        activeUser = user
+       
         const payload = {"id": userId};
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
+        
+        ActiveUser.setActiveUser(userId)
 
         res.status(300).json({
             status: 200,
@@ -94,6 +97,10 @@ exports.login = async (req, res) => {
     }
 
 }
+
+// module.exports = getActiveUser();
+
+
 
 exports.getUserProfile = async (req, res) => {
     try {
