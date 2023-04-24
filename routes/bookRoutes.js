@@ -13,4 +13,8 @@ router
 .route('/:id')
 .get(bookController.getBook);
 
+router
+.route('/receive/:id')
+.put(bookController.receivePacket);
+
 module.exports = router;
