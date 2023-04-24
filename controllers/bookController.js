@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 
 const Book = require('./../models/bookModel');
+const Courier = require('./../models/courierModel')
 
 const mongoose = require('mongoose')
 
@@ -39,6 +40,29 @@ exports.getBook = async (req, res) => {
         res.status(400).json({
             status: 'fail',
             message: err
+        })
+    }
+}
+
+exports.receivePacket = async (req, res) => {
+    try {
+        const courierData = await Courier.find({_id: mongoose.Types.ObjectId(req.params.id), courier_status: "unavailable"})
+        if (courierData) {
+            await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id)},{courier_status: "available"})
+            res.status(200).json({
+                status: 'success',
+                message: 'Packet received'
+            })
+        } else {
+            res.status(400).json({
+                status: 'fail',
+                message: 'Something wrong with courier id'
+            })
+        }
+    } catch {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Receive packet can\'t be process'
         })
     }
 }

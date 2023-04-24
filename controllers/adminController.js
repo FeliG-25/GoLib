@@ -128,8 +128,9 @@ exports.changeBorrowingState = async (req,res) => {
     const { state_type, courier_id, delivery_fee } = req.body
     try {
         const transactionData = await Transaction.findById(mongoose.Types.ObjectId(req.params.id)).populate('books')
+        const courierData = await Courier.findById(mongoose.Types.ObjectId(courier_id))
         
-        if (transactionData) {
+        if (transactionData && courierData) {
             //update books stocks
             for (var i = 0; i < transactionData.books.length; i++) {
                 if (state_type === "returned") {
@@ -175,7 +176,7 @@ exports.changeBorrowingState = async (req,res) => {
         } else {
             res.status(400).json({
                 status: 'fail',
-                message: 'Transaction not found!'
+                message: 'Something wrong with transaction or courier id!'
             })
         }
         
