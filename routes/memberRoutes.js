@@ -11,7 +11,9 @@ router
 .get(auth, userController.getUserProfile)
 router
 .route('/cart/:id')
-.get(auth, memberController.getUserCart);
+.get(auth, memberController.getUserCart)
+.post(auth, memberController.addToCart);
+
 router
 .route('/transaction/:id')
 .get(auth, memberController.getUserTransaction)

@@ -52,23 +52,12 @@ exports.createUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        // ActiveUser.setActiveUser = null;
-        console.log("MASUK LOGOUT")
-        // Hapus token dari header
-        // delete req.headers['Authorization']
-        // req.headers.authorization = '';
-        
-        // clear cookie2 yang ada sebelumnya
         res.clearCookie('token');
         res.clearCookie('user');
-        // res.json({
-        //     status: 'success',
-        //     messag
-        // })
         
-        res.status(300).json({
+        res.status(200).json({
             status: 200,
-            message: "Dah logout ea"
+            message: "Successfully logout!"
         })
 
 
@@ -123,16 +112,10 @@ exports.login = async (req, res) => {
             maxAge: 3600 * 1000 //1 jam
         })
 
-        res.send('mantap')
-
-        // ActiveUser.setActiveUser(userId)
-
-        // res.status(200).json({
-        //     status: 200,
-        //     message: "Success! Welcome back, " + member.full_name + "!",
-        //     token: token
-        // }) 
-
+        res.status(200).json({
+            message: 'Logged in! Welcome back, '+member.full_name+'!'
+        });
+        
     } catch (err){
         console.error(err);
         res.status(500).json({
