@@ -4,19 +4,19 @@ const auth = require('../middleware/auth')
 const router = express.Router();
 
 router
-.route('/book')
+.route('/add-book')
 .post(auth('ADMIN'), adminController.addBook);
 
 router
-.route('/borrowApprove')
+.route('/borrow-approve')
 .get(auth('ADMIN'), adminController.getUnapprovedBorrowing);
 
 router
-.route('/returnApprove')
+.route('/return-approve')
 .get(auth('ADMIN'), adminController.getUnapprovedReturn);
 
 router
-.route('/:id')
+.route('/topup/:id')
 .put(auth('ADMIN'), adminController.topUpUserBalance)
 
 router

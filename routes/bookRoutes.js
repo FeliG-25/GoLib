@@ -5,7 +5,7 @@ const router = express.Router();
 
 // without params
 router
-.route('/all')
+.route('/')
 .get(bookController.getAllBooks);
 
 // with params

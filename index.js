@@ -19,13 +19,14 @@ app.use((req,res,next) => {
 
 // routes for users
 app.use('/api/v1', userRouter)
-app.use('/api/v1', memberRouter)
+
+// routes for members
 app.use('/api/v1/member', memberRouter)
 
 // routes for admin
 app.use('/api/v1/admin', adminRouter)
 
 // routes for books (users & members can view)
-app.use('/api/v1/book', bookRouter)
+app.use('/api/v1/books', bookRouter)
 
 module.exports = app
