@@ -14,7 +14,7 @@ router
 .get(bookController.getBook);
 
 router
-.route('/receive/:id')
-.put(bookController.receivePacket);
+.route('/receive/:id_trans/:id_courier')
+.put(auth(['MEMBER','ADMIN']),bookController.receivePacket);
 
 module.exports = router;

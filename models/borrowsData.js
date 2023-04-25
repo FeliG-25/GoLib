@@ -3,14 +3,17 @@ const Borrowed = require('./transactionModel');
 const Courier = require('./courierModel');
 
 const borrowSchema = new mongoose.Schema({
-    borrows: [{
+    transaction_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transaction'
-    }],
-    couriers: [{
+    },
+    courier_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Courier'
-    }]
+    },
+    status: {
+        type: String
+    }
 });
 
 const Borrow = mongoose.model('Borrow', borrowSchema);

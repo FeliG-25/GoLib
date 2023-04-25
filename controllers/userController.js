@@ -7,6 +7,7 @@ const Member = require('./../models/memberModel')
 const mongoose = require('mongoose')
 const ActiveUser = require ('./../models/activeUser')
 const Cart = require('../models/cartModel')
+const Admin = require('../models/adminModel')
 
 dotenv.config({path: './config.env'});
 
@@ -74,18 +75,25 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({email});
+        const user = await User.findOne({email}, 'password user_type');
         const userId = user._id
-        const member = await Member.findOne({'member_id': userId}).exec();
+        var member = Member
+        var admin = Admin
+
+        if (user.user_type === 'MEMBER') {
+            member = await Member.findOne({'member_id': userId}).exec();
+        } else {
+            admin = await Admin.findOne({'admin_id': userId}).exec();
+        }
 
         //If there is no user
-        if (!user && !member){
+        if ((!user && !member) || (!user && !admin)){
             return res.status(401).json({
                 status: '401',
                 message: 'Invalid credential'
             })
         }
-
+        
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) {
             return res.status(400).json({
@@ -94,7 +102,6 @@ exports.login = async (req, res) => {
             });
         }
 
-       
         const payload = {id: userId};
         const token = jwt.sign(payload, process.env.SECRET, {expiresIn: '1h'});
 
@@ -111,10 +118,17 @@ exports.login = async (req, res) => {
             secure: false,
             maxAge: 3600 * 1000 //1 jam
         })
-
-        res.status(200).json({
-            message: 'Logged in! Welcome back, '+member.full_name+'!'
-        });
+        
+        if (user.user_type == 'MEMBER') {
+            res.status(200).json({
+                message: 'Logged in! Welcome back, '+member.full_name+'!'
+            });
+        } else {
+            res.status(200).json({
+                message: 'Logged in! Welcome back, admin!'
+            });
+        }
+        
         
     } catch (err){
         console.error(err);
