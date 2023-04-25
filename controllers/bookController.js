@@ -5,7 +5,8 @@ const dotenv = require('dotenv')
 const Book = require('./../models/bookModel');
 const Courier = require('./../models/courierModel')
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const Borrow = require('../models/borrowsData');
 
 exports.getAllBooks = async (req, res) => {
     try{
@@ -46,9 +47,10 @@ exports.getBook = async (req, res) => {
 
 exports.receivePacket = async (req, res) => {
     try {
-        const courierData = await Courier.find({_id: mongoose.Types.ObjectId(req.params.id), courier_status: "unavailable"})
+        const courierData = await Courier.find({_id: mongoose.Types.ObjectId(req.params.id_courier), courier_status: "unavailable"})
         if (courierData) {
-            await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id)},{courier_status: "available"})
+            await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id_courier)},{courier_status: "available"})
+            await Borrow.updateOne({transaction_id:mongoose.Types.ObjectId(req.params.id_trans),courier_id:mongoose.Types.ObjectId(req.params.id_courier)},{status:'received'})
             res.status(200).json({
                 status: 'success',
                 message: 'Packet received'
