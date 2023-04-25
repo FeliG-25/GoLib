@@ -24,7 +24,7 @@ function auth(role) {
           const decoded = jwt.verify(token, process.env.SECRET)
           req = decoded;
           if (role !== user.user_type) {
-            return res.status(403).json({msg: 'Access denied'});
+            return res.status(403).json({msg: 'Your role don\'t have access to this menu'});
           }
           next()
         } catch (err) {
