@@ -21,16 +21,14 @@ router
 // Need auth
 router
 .route('/profile/:id')
-.get(auth, userController.getUserProfile)
+.get(auth('MEMBER'), userController.getUserProfile)
 
 router
 .route('/member/password/edit/:id')
-.patch(auth, userController.updateUserPassword);
+.patch(auth('MEMBER'), userController.updateUserPassword);
 
 router
 .route('/member/profile/edit/:id')
-.patch(auth, userController.updateUserProfile);
-
-
+.patch(auth('MEMBER'), userController.updateUserProfile);
 
 module.exports = router;

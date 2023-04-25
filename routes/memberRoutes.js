@@ -8,18 +8,18 @@ const router = express.Router();
 
 router
 .route('/profile/:id')
-.get(auth, userController.getUserProfile)
+.get(auth('MEMBER'), userController.getUserProfile)
 router
 .route('/cart/:id')
-.get(auth, memberController.getUserCart)
-.post(auth, memberController.addToCart);
+.get(auth('MEMBER'), memberController.getUserCart)
+.post(auth('MEMBER'), memberController.addToCart);
 
 router
 .route('/transaction/:id')
-.get(auth, memberController.getUserTransaction)
-.patch(auth, memberController.returnBook);
+.get(auth('MEMBER'), memberController.getUserTransaction)
+.patch(auth('MEMBER'), memberController.returnBook);
 router
 .route('/checkout/:id')
-.post(auth, memberController.checkOut);
+.post(auth('MEMBER'), memberController.checkOut);
 
 module.exports = router;

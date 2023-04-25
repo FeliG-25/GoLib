@@ -1,29 +1,30 @@
 const express = require('express');
 const adminController = require('./../controllers/adminController');
+const auth = require('../middleware/auth')
 const router = express.Router();
 
 router
 .route('/book')
-.post(adminController.addBook);
+.post(auth('ADMIN'), adminController.addBook);
 
 router
 .route('/borrowApprove')
-.get(adminController.getUnapprovedBorrowing);
+.get(auth('ADMIN'), adminController.getUnapprovedBorrowing);
 
 router
 .route('/returnApprove')
-.get(adminController.getUnapprovedReturn);
+.get(auth('ADMIN'), adminController.getUnapprovedReturn);
 
 router
 .route('/:id')
-.put(adminController.topUpUserBalance)
+.put(auth('ADMIN'), adminController.topUpUserBalance)
 
 router
 .route('/income')
-.get(adminController.getIncome)
+.get(auth('ADMIN'), adminController.getIncome)
 
 router
 .route('/choose-courier/:id')
-.put(adminController.changeBorrowingState)
+.put(auth('ADMIN'), adminController.changeBorrowingState)
 
 module.exports = router;
