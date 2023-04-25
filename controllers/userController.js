@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
-
+const cookieParser = require('cookie-parser');
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
 const mongoose = require('mongoose')
@@ -50,6 +50,36 @@ exports.createUser = async (req, res) => {
     }
 }
 
+exports.logout = async (req, res) => {
+    try {
+        // ActiveUser.setActiveUser = null;
+        console.log("MASUK LOGOUT")
+        // Hapus token dari header
+        // delete req.headers['Authorization']
+        // req.headers.authorization = '';
+        
+        // clear cookie2 yang ada sebelumnya
+        res.clearCookie('token');
+        res.clearCookie('user');
+        // res.json({
+        //     status: 'success',
+        //     messag
+        // })
+        
+        res.status(300).json({
+            status: 200,
+            message: "Dah logout ea"
+        })
+
+
+    } catch (err){
+        console.error(err);
+        res.status(500).json({
+        message: 'Internal server error'
+        });
+    }
+}
+
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -76,18 +106,32 @@ exports.login = async (req, res) => {
         }
 
        
-        const payload = {"id": userId};
-        const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
-        
-        ActiveUser.setActiveUser(userId)
+        const payload = {id: userId};
+        const token = jwt.sign(payload, process.env.SECRET, {expiresIn: '1h'});
 
-        res.status(300).json({
-            status: 200,
-            message: "Success! Welcome back, " + member.full_name + "!",
-            token: token
+        //set cookie tokennya
+        res.cookie('token', token, {
+            httpOnly: false,
+            secure: false,
+            maxAge: 3600 * 1000 //1 jam
+        });
+
+        //set cookie user
+        res.cookie('user', JSON.stringify(user), {
+            httpOnly: false,
+            secure: false,
+            maxAge: 3600 * 1000 //1 jam
         })
 
-        
+        res.send('mantap')
+
+        // ActiveUser.setActiveUser(userId)
+
+        // res.status(200).json({
+        //     status: 200,
+        //     message: "Success! Welcome back, " + member.full_name + "!",
+        //     token: token
+        // }) 
 
     } catch (err){
         console.error(err);
@@ -97,10 +141,6 @@ exports.login = async (req, res) => {
     }
 
 }
-
-// module.exports = getActiveUser();
-
-
 
 exports.getUserProfile = async (req, res) => {
     try {
