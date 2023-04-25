@@ -13,6 +13,11 @@ router
 .route('/login')
 .post(userController.login);
 
+//Logout
+router
+.route('/logout')
+.post(userController.logout);
+
 // Need auth
 router
 .route('/profile/:id')
