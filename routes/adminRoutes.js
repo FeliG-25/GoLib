@@ -30,9 +30,9 @@ router
 // .route('/transactions')
 // .get(adminController.getAllTransactionTest);
 
-router
-.route('/incomeTest')
-.get(adminController.getIncomeTest);
+// router
+// .route('/incomeTest')
+// .get(adminController.getIncomeTest);
 
 // router
 // .route('/topUpTest')
