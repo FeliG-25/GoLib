@@ -187,6 +187,8 @@ exports.updateUserPassword = async (req, res) => {
     try{
         const user = await User.findById(req.params.id);
 
+        let updUser = User
+
         const { current_pw, new_pw, confirm_new } = req.body
         if (current_pw != user.password) {
             return res.status(400).json({
@@ -199,10 +201,20 @@ exports.updateUserPassword = async (req, res) => {
                 message: "New password must match with confirm"
             });
         } else {
-            const upd_user = await User.findByIdAndUpdate(req.params.id, {password: new_pw}, {
-                new: true,
-                runValidators: true
-            });
+            const upd_user = await User.findByIdAndUpdate(req.params.id,
+                {password: bcrypt.hash(new_pw, 10, (err, hash) => {
+                    if (err) {
+                        return next(err);
+                    }
+            
+                    user.password = hash;
+                    next()
+                })},
+                {
+                    new: true,
+                    runValidators: true
+                }
+            );
 
             res.status(201).json({
                 status: 'success',
