@@ -6,11 +6,6 @@ const adminSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         res: 'User',
         required: [true, 'couriers can\'t be empty']
-    },
-    branch: {
-        type: mongoose.Schema.Types.ObjectId,
-        res: 'Branch',
-        required: [true, 'admin must in spesific branch']
     }
 });
 
