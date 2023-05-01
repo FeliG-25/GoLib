@@ -7,6 +7,7 @@ const Courier = require('./../models/courierModel')
 
 const mongoose = require('mongoose');
 const Borrow = require('../models/borrowsData');
+const Transaction = require('../models/transactionModel');
 
 exports.getAllBooks = async (req, res) => {
     try{
@@ -47,20 +48,30 @@ exports.getBook = async (req, res) => {
 
 exports.receivePacket = async (req, res) => {
     try {
-        const courierData = await Courier.find({_id: mongoose.Types.ObjectId(req.params.id_courier), courier_status: "unavailable"})
-        if (courierData) {
-            await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id_courier)},{courier_status: "available"})
-            await Borrow.updateOne({transaction_id:mongoose.Types.ObjectId(req.params.id_trans),courier_id:mongoose.Types.ObjectId(req.params.id_courier)},{status:'received'})
-            res.status(200).json({
-                status: 'success',
-                message: 'Packet received'
-            })
+        const borrowData = await Borrow.findOne({transaction_id:mongoose.Types.ObjectId(req.params.id_trans),courier_id:mongoose.Types.ObjectId(req.params.id_courier),status:'on_the_way'})
+        if (borrowData) {
+            const transactionData = await Transaction.findById(mongoose.Types.ObjectId(req.params.id_trans),"status")
+            const user = JSON.parse(req.cookies.user)
+            if ((user.user_type === 'MEMBER' && transactionData.status === "borrowed") || (user.user_type === 'ADMIN' && transactionData.status === 'returned')) {
+                await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id_courier)},{courier_status: "available"})
+                await Borrow.updateOne({transaction_id:mongoose.Types.ObjectId(req.params.id_trans),courier_id:mongoose.Types.ObjectId(req.params.id_courier),status:'on_the_way'},{status:'received'})
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Packet received'
+                })
+            } else {
+                res.status(400).json({
+                    status: 'fail',
+                    message: 'Transaction data was wrong!'
+                })
+            }
         } else {
             res.status(400).json({
                 status: 'fail',
-                message: 'Something wrong with courier id'
+                message: 'Packet already received!'
             })
         }
+        
     } catch {
         res.status(400).json({
             status: 'fail',
