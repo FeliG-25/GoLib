@@ -129,11 +129,11 @@ exports.login = async (req, res) => {
             });
         }
         
-        
     } catch (err){
         console.error(err);
-        res.status(500).json({
-            message: 'Internal server error'
+        res.status(401).json({
+            status: 401,
+            message: 'Invalid Credential'
         });
     }
 
