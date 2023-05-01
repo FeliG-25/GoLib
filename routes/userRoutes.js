@@ -1,6 +1,5 @@
 const express = require('express');
 const userController = require('./../controllers/userController');
-const auth = require('../middleware/auth')
 const router = express.Router();
 
 // Register new User
@@ -13,19 +12,9 @@ router
 .route('/login')
 .post(userController.login);
 
-// Need auth
+//Logout
 router
-.route('/profile/:id')
-.get(auth, userController.getUserProfile)
-
-router
-.route('/member/password/edit/:id')
-.patch(auth, userController.updateUserPassword);
-
-router
-.route('/member/profile/edit/:id')
-.patch(auth, userController.updateUserProfile);
-
-
+.route('/logout')
+.post(userController.logout);
 
 module.exports = router;

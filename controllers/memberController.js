@@ -1,14 +1,14 @@
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
-
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
 const Book = require('./../models/bookModel')
 const Cart = require('./../models/cartModel')
 const Transaction = require('./../models/transactionModel')
+const userController = require('./userController')
+const ActiveUser = require('./../models/activeUser')
 
 const mongoose = require('mongoose')
+const ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config({path: './config.env'});
 
@@ -24,6 +24,101 @@ exports.getUserCart = async (req, res) => {
             data: cart
         });
     } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+}
+
+exports.addToCart = async (req, res) => {
+    const book_id = ObjectId(req.body.book_id);
+    let added = false
+    try {
+        const cart = await Cart.findById(req.params.id)
+        const books = cart.books
+        books.forEach((book) => {
+            if (book.toString() === book_id.toString()) {
+                added = true
+            }
+        })
+
+        if(added) {
+            console.log("udah ada bukunya bro")
+            return res.status(201).json({
+            status: 201,
+            message: 'Book is already added to cart!'
+            });
+        } else {
+            books.push(book_id)
+            cart.books = books
+            cart.save()
+            res.status(201).json({
+                status: 201,
+                message: 'New book added!'
+            })
+        }
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Internal Sever Error');
+    }
+}
+
+exports.checkOut = async (req, res) => {
+    try {
+        let totalPrice = 0
+        let date = new Date().toISOString().split('T')[0]
+        let deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        const cart = await Cart.findById(req.params.id)
+        const activeUserId = ActiveUser.getActiveUser()
+        const activeMember = await Member.find({member_id: activeUserId})
+
+        const bookIds = cart.books
+
+        const books = await Book.find({
+            _id: {
+                $in: bookIds
+            }
+        }).exec()
+
+        if(books.length == 0){
+            res.status(400).json({
+                status: '400',
+                message: 'Cart is empty! Please choose books.'
+            });
+    
+        } else {
+            books.forEach((book) => {
+                console.log(book.rent_price)
+                totalPrice += book.rent_price
+            })
+
+            console.log("Total: "+totalPrice)
+
+            const newTransaction = new Transaction ({
+                books: bookIds, 
+                borrow_date: date, 
+                deadline_date: deadline,
+                returned_date: null,
+                price: totalPrice,
+                fee:0,
+                status: 'borrow_process'
+            })
+
+            await newTransaction.save().then(newTransaction => {
+                cart.books = []
+                cart.save()
+                activeMember[0].transactions.push(newTransaction._id)
+                activeMember[0].save()
+            })
+            
+            res.status(200).json({
+                status: '200',
+                message: 'Success!',
+                data: cart
+            });
+        }
+
+    }catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
     }

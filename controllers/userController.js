@@ -1,14 +1,15 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
-
+const cookieParser = require('cookie-parser');
 const User = require('./../models/userModel')
 const Member = require('./../models/memberModel')
 const mongoose = require('mongoose')
+const ActiveUser = require ('./../models/activeUser')
+const Cart = require('../models/cartModel')
+const Admin = require('../models/adminModel')
 
 dotenv.config({path: './config.env'});
-
-
 
 exports.createUser = async (req, res) => {
     const { email, password, full_name, user_name, birth_date, phone_number, address, balance, user_type } = req.body;
@@ -27,10 +28,12 @@ exports.createUser = async (req, res) => {
         let savedUser = User
 
         const newMember = await Member.create(req.body);
+        const newCart = await Cart.create({books: []});
         const newUser = new User({user_name, password, email, user_type})
         await newUser.save().then(user => {
             console.log("Added new user: ", user);
             newMember.member_id = user._id
+            newMember.cart = newCart._id
             newMember.save()
             savedUser = user;
         });
@@ -48,24 +51,49 @@ exports.createUser = async (req, res) => {
     }
 }
 
+exports.logout = async (req, res) => {
+    try {
+        res.clearCookie('token');
+        res.clearCookie('user');
+        
+        res.status(200).json({
+            status: 200,
+            message: "Successfully logout!"
+        })
+
+
+    } catch (err){
+        console.error(err);
+        res.status(500).json({
+        message: 'Internal server error'
+        });
+    }
+}
+
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({email});
+        const user = await User.findOne({email}, 'password user_type');
         const userId = user._id
-        console.log(userId);
-        const member = await Member.findOne({'member_id': userId}).exec();
+        var member = Member
+        var admin = Admin
+
+        if (user.user_type === 'MEMBER') {
+            member = await Member.findOne({'member_id': userId}).exec();
+        } else {
+            admin = await Admin.findOne({'admin_id': userId}).exec();
+        }
 
         //If there is no user
-        if (!user && !member){
+        if ((!user && !member) || (!user && !admin)){
             return res.status(401).json({
                 status: '401',
                 message: 'Invalid credential'
             })
         }
-
+        
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) {
             return res.status(400).json({
@@ -74,18 +102,34 @@ exports.login = async (req, res) => {
             });
         }
 
-        activeUser = user
-        const payload = {"id": userId};
-        const token = jwt.sign(payload, process.env.SECRET, {expiresIn: 3000000});
+        const payload = {id: userId};
+        const token = jwt.sign(payload, process.env.SECRET, {expiresIn: '1h'});
 
-        res.status(300).json({
-            status: 200,
-            message: "Success! Welcome back, " + member.full_name + "!",
-            token: token
+        //set cookie tokennya
+        res.cookie('token', token, {
+            httpOnly: false,
+            secure: false,
+            maxAge: 3600 * 1000 //1 jam
+        });
+
+        //set cookie user
+        res.cookie('user', JSON.stringify(user), {
+            httpOnly: false,
+            secure: false,
+            maxAge: 3600 * 1000 //1 jam
         })
-
         
-
+        if (user.user_type == 'MEMBER') {
+            res.status(200).json({
+                message: 'Logged in! Welcome back, '+member.full_name+'!'
+            });
+        } else {
+            res.status(200).json({
+                message: 'Logged in! Welcome back, admin!'
+            });
+        }
+        
+        
     } catch (err){
         console.error(err);
         res.status(500).json({

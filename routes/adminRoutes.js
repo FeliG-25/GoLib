@@ -1,41 +1,30 @@
 const express = require('express');
 const adminController = require('./../controllers/adminController');
+const auth = require('../middleware/auth')
 const router = express.Router();
 
 router
-.route('/book')
-.post(adminController.addBook);
+.route('/add-book')
+.post(auth('ADMIN'), adminController.addBook);
 
 router
-.route('/borrowApprove')
-.get(adminController.getUnapprovedBorrowing);
+.route('/borrow-approve')
+.get(auth('ADMIN'), adminController.getUnapprovedBorrowing);
 
 router
-.route('/returnApprove')
-.get(adminController.getUnapprovedReturn);
+.route('/return-approve')
+.get(auth('ADMIN'), adminController.getUnapprovedReturn);
 
 router
-.route('/:id')
-.put(adminController.topUpUserBalance)
+.route('/topup/:id')
+.put(auth('ADMIN'), adminController.topUpUserBalance)
 
 router
 .route('/income')
-.get(adminController.getIncome)
+.get(auth('ADMIN'), adminController.getIncome)
 
 router
 .route('/choose-courier/:id')
-.put(adminController.changeBorrowingState)
-//ini masih buat sementara dulu <buat testing aja data yang di get apa aja>
-// router
-// .route('/transactions')
-// .get(adminController.getAllTransactionTest);
-
-// router
-// .route('/incomeTest')
-// .get(adminController.getIncomeTest);
-
-// router
-// .route('/topUpTest')
-// .get(adminController.getMemberTest);
+.put(auth('ADMIN'), adminController.changeBorrowingState)
 
 module.exports = router;

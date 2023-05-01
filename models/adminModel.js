@@ -7,12 +7,7 @@ const adminSchema = new mongoose.Schema({
         res: 'User',
         required: [true, 'couriers can\'t be empty']
     },
-    couriers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        res: 'Courier',
-        required: [true, 'couriers can\'t be empty']
-    }],
-    branchs: {
+    branch: {
         type: mongoose.Schema.Types.ObjectId,
         res: 'Branch',
         required: [true, 'admin must in spesific branch']
