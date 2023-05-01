@@ -14,8 +14,6 @@ function auth(role) {
         const user = JSON.parse(req.cookies.user);
         if(token) {
           req.headers['Authorization'] = `Bearer ${token}`;
-          console.log(user)
-          console.log(user.user_type)
         } else if(!token) {
           return res.status(401).json({msg: 'Please login first'})
         }
