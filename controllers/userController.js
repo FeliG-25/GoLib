@@ -129,11 +129,11 @@ exports.login = async (req, res) => {
             });
         }
         
-        
     } catch (err){
         console.error(err);
-        res.status(500).json({
-            message: 'Internal server error'
+        res.status(401).json({
+            status: 401,
+            message: 'Invalid Credential'
         });
     }
 
@@ -187,8 +187,11 @@ exports.updateUserPassword = async (req, res) => {
     try{
         const user = await User.findById(req.params.id);
 
+        let updUser = User
+
         const { current_pw, new_pw, confirm_new } = req.body
-        if (current_pw != user.password) {
+        const isMatch = await bcrypt.compare(current_pw, user.password);
+        if (!isMatch) {
             return res.status(400).json({
                 status: 'fail',
                 message: "Current password doesn't match"
@@ -199,10 +202,13 @@ exports.updateUserPassword = async (req, res) => {
                 message: "New password must match with confirm"
             });
         } else {
-            const upd_user = await User.findByIdAndUpdate(req.params.id, {password: new_pw}, {
-                new: true,
-                runValidators: true
-            });
+            const upd_user = await User.findByIdAndUpdate(req.params.id,
+                {password: await bcrypt.hash(new_pw, 10)},
+                {
+                    new: true,
+                    runValidators: true
+                }
+            );
 
             res.status(201).json({
                 status: 'success',
