@@ -42,7 +42,6 @@ exports.addToCart = async (req, res) => {
         })
 
         if(added) {
-            console.log("udah ada bukunya bro")
             return res.status(201).json({
             status: 201,
             message: 'Book is already added to cart!'
@@ -69,8 +68,8 @@ exports.checkOut = async (req, res) => {
         let date = new Date().toISOString().split('T')[0]
         let deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         const cart = await Cart.findById(req.params.id)
-        const activeUserId = ActiveUser.getActiveUser()
-        const activeMember = await Member.find({member_id: activeUserId})
+        const activeUser = JSON.parse(req.cookies.user)
+        const activeMember = await Member.find({member_id: activeUser._id})
 
         const bookIds = cart.books
 
@@ -113,8 +112,7 @@ exports.checkOut = async (req, res) => {
             
             res.status(200).json({
                 status: '200',
-                message: 'Success!',
-                data: cart
+                message: 'Your transaction created! Please wait for admin to accept it.'
             });
         }
 
