@@ -17,8 +17,8 @@ exports.addBook = async (req,res) => {
         const book = await Book.find({title: req.body.title, author: req.body.author});
         if (book.length != 0) {
             //asumsinya untuk judul dan author itu cuma ada 1..
-            res.status(400).json({
-                status: 'failed',
+            res.status(409).json({
+                status: 409,
                 message: "Book already exists!"
             })
         } else {
@@ -36,8 +36,8 @@ exports.addBook = async (req,res) => {
     
             if (!fileName || !mimeType) {
                 res.status(400).json({
-                    status: 'failed',
-                    message: "Something wronog with cover path"
+                    status: 400,
+                    message: "Something wrong with cover_path"
                 })
             } else {
                 //upload image ke drive
@@ -63,7 +63,7 @@ exports.addBook = async (req,res) => {
                 const newBook = await Book.create(req.body)
 
                 res.status(201).json({
-                    status: 'success add new book',
+                    status: 201,
                     data: {
                         book: newBook
                     }
@@ -72,10 +72,8 @@ exports.addBook = async (req,res) => {
         }
         
     } catch (err) {
-        res.status(400).json({
-            status: 'failed to add new book',
-            message: "Invalid data sent!\n" + err
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -85,8 +83,8 @@ exports.getUnapprovedBorrowing = async (req,res) => {
         if (borrowsData.length > 0) {
             const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
             if (courierData.length > 0) {
-                res.status(201).json({
-                    status: 'success',
+                res.status(302).json({
+                    status: 302,
                     results: borrowsData.length,
                     data: {
                         borrow: borrowsData,
@@ -94,23 +92,21 @@ exports.getUnapprovedBorrowing = async (req,res) => {
                     }
                 })
             } else {
-                res.status(400).json({
-                    status: 'failed',
+                res.status(404).json({
+                    status: 404,
                     message: 'Available courier not found!'
                 })
             }
         } else {
-            res.status(400).json({
-                status: 'fail',
+            res.status(404).json({
+                status: 404,
                 message: 'No transactions found in borrow_process status!'
             })
         }
         
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Invalid data sent!'
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -120,8 +116,8 @@ exports.getUnapprovedReturn = async (req,res) => {
         if (returnedData.length > 0) {
             const courierData = await Courier.find({courier_status: 'available'}, 'courier_name')
             if (courierData.length > 0) {
-                res.status(201).json({
-                    status: 'success',
+                res.status(302).json({
+                    status: 302,
                     results: returnedData.length,
                     data: {
                         borrow: returnedData,
@@ -129,23 +125,21 @@ exports.getUnapprovedReturn = async (req,res) => {
                     }
                 })
             } else {
-                res.status(400).json({
-                    status: 'failed',
+                res.status(404).json({
+                    status: 404,
                     message: 'Available courier not found!'
                 })
             }
             
         } else {
-            res.status(400).json({
-                status: 'fail',
+            res.status(404).json({
+                status: 404,
                 message: 'No transactions found in return_process status!'
             })
         }
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Invalid data sent!' + err
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -193,27 +187,25 @@ exports.changeBorrowingState = async (req,res) => {
                 const borrow = await Borrow.create({'transaction_id':mongoose.Types.ObjectId(req.params.id),'courier_id':mongoose.Types.ObjectId(courier_id),'status':'on_the_way'})
                 
                 res.status(201).json({
-                    status: 'success',
+                    status: 201,
                     data: borrow
                 })
             } else {
                 res.status(400).json({
-                    status: 'fail',
+                    status: 400,
                     message: 'Something wrong with transaction status'
                 })
             }
         } else {
-            res.status(400).json({
-                status: 'fail',
+            res.status(404).json({
+                status: 404,
                 message: 'Something wrong with transaction or courier id!'
             })
         }
         
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Update Failed!' + err
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -224,24 +216,22 @@ exports.topUpUserBalance = async (req, res) => {
             const member_new = await Member.findOneAndUpdate({member_id: mongoose.Types.ObjectId(req.params.id)},{$inc:{balance: Number(req.body.top_up_value)}},{new:true, projection: {balance:1}})
 
             res.status(200).json({
-                status: 'success',
+                status: 200,
                 data: {
                     old_data: member_old,
                     updated_data: member_new
                 }
             })
         } else {
-            res.status(400).json({
-                status: 'fail',
+            res.status(404).json({
+                status: 404,
                 message: 'Member not found!'
             })
         }
         
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Update error!!\n' + err.message
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -263,16 +253,14 @@ exports.getIncome = async (req, res) => {
             monthIncomes[temp].sum_borrows += monthTransactions[i].price + monthTransactions[i].fee
         }
 
-        res.status(200).json({
-            status: 'success',
+        res.status(302).json({
+            status: 302,
             data: {
                 month_income: monthIncomes
             }
         })
     } catch {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Update error!!\n' + err.message
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }

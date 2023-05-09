@@ -13,18 +13,16 @@ exports.getAllBooks = async (req, res) => {
     try{
         const books = await Book.find();
 
-        res.status(201).json({
-            status: 'success',
+        res.status(302).json({
+            status: 302,
             results: books.length,
             data: {
                 books
             }
         });
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Invalid data sent!'
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -32,17 +30,15 @@ exports.getBook = async (req, res) => {
     try{
         const book = await Book.findById(req.params.id);
 
-        res.status(201).json({
-            status: 'success',
+        res.status(302).json({
+            status: 302,
             data: {
                 book
             }
         });
     } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
 
@@ -60,22 +56,20 @@ exports.receivePacket = async (req, res) => {
                     message: 'Packet received'
                 })
             } else {
-                res.status(400).json({
+                res.status(404).json({
                     status: 'fail',
                     message: 'Transaction data was wrong!'
                 })
             }
         } else {
-            res.status(400).json({
+            res.status(409).json({
                 status: 'fail',
                 message: 'Packet already received!'
             })
         }
         
     } catch {
-        res.status(400).json({
-            status: 'fail',
-            message: 'Receive packet can\'t be process'
-        })
+        console.error(err.message);
+        res.status(500).send('server error');
     }
 }
