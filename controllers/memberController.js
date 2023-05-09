@@ -72,6 +72,7 @@ exports.checkOut = async (req, res) => {
         const activeMember = await Member.find({member_id: activeUser._id})
 
         const bookIds = cart.books
+        const userBalance = activeMember[0].balance
 
         const books = await Book.find({
             _id: {
@@ -93,27 +94,39 @@ exports.checkOut = async (req, res) => {
 
             console.log("Total: "+totalPrice)
 
-            const newTransaction = new Transaction ({
-                books: bookIds, 
-                borrow_date: date, 
-                deadline_date: deadline,
-                returned_date: null,
-                price: totalPrice,
-                fee:0,
-                status: 'borrow_process'
-            })
+            if (totalPrice > userBalance) {
+                return res.status(400).json({
+                    status: 400,
+                    message: 'Your account balance is not enough!'
+                })
+            } else {
+                const newTransaction = new Transaction ({
+                    books: bookIds, 
+                    borrow_date: date, 
+                    deadline_date: deadline,
+                    returned_date: null,
+                    price: totalPrice,
+                    fee:0,
+                    status: 'borrow_process'
+                })
 
-            await newTransaction.save().then(newTransaction => {
-                cart.books = []
-                cart.save()
-                activeMember[0].transactions.push(newTransaction._id)
-                activeMember[0].save()
-            })
-            
-            res.status(202).json({
-                status: 202,
-                message: 'Your transaction created! Please wait for admin to accept it.'
-            });
+                console.log("Saldo sebelum: "+activeMember[0].balance)
+    
+                await newTransaction.save().then(newTransaction => {
+                    cart.books = []
+                    cart.save()
+                    activeMember[0].transactions.push(newTransaction._id)
+                    activeMember[0].balance = activeMember[0].balance-totalPrice
+                    activeMember[0].save()
+                })
+
+                console.log("Saldo sekarang: "+activeMember[0].balance)
+                
+                res.status(202).json({
+                    status: 202,
+                    message: 'Your transaction created! Please wait for admin to accept it.'
+                });
+            }
         }
 
     }catch (err) {
