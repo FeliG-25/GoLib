@@ -237,7 +237,7 @@ exports.topUpUserBalance = async (req, res) => {
 
 exports.getIncome = async (req, res) => {
     try {
-        const monthTransactions = await await Transaction.find({}, 'price fee borrow_date')
+        const monthTransactions = await Transaction.find({}, 'price fee borrow_date')
         var monthIncomes = new Array(12)
         for (var i = 0; i < 12; i++) {
             monthIncomes[i] = new MonthIncome({
