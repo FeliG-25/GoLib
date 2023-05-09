@@ -154,9 +154,9 @@ exports.changeBorrowingState = async (req,res) => {
                 //update books stocks
                 for (var i = 0; i < transactionData.books.length; i++) {
                     if (state_type === "returned") {
-                        await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
+                        await Book.updateOne({"_id": mongoose.Types.ObjectId(transactionData.books[i]._id)},{$inc: {stock: 1}})
                     } else if (state_type === "borrowed") {
-                        await Book.updateOne(transactionData.books[i],{$inc: {stock: -1}})
+                        await Book.updateOne({"_id": mongoose.Types.ObjectId(transactionData.books[i]._id)},{$inc: {stock: -1}})
                     }
                 }
                 
@@ -237,7 +237,7 @@ exports.topUpUserBalance = async (req, res) => {
 
 exports.getIncome = async (req, res) => {
     try {
-        const monthTransactions = await await Transaction.find({}, 'price fee borrow_date')
+        const monthTransactions = await Transaction.find({}, 'price fee borrow_date')
         var monthIncomes = new Array(12)
         for (var i = 0; i < 12; i++) {
             monthIncomes[i] = new MonthIncome({
