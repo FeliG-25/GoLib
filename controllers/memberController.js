@@ -18,8 +18,8 @@ exports.getUserCart = async (req, res) => {
         const member = await Member.findOne({'member_id':user._id})
         const cart = await Cart.find({'_id':member.cart});
         
-        res.status(200).json({
-            status: '200',
+        res.status(302).json({
+            status: 302,
             message: 'Success!',
             data: cart
         });
@@ -42,8 +42,8 @@ exports.addToCart = async (req, res) => {
         })
 
         if(added) {
-            return res.status(201).json({
-            status: 201,
+            return res.status(409).json({
+            status: 409,
             message: 'Book is already added to cart!'
             });
         } else {
@@ -81,7 +81,7 @@ exports.checkOut = async (req, res) => {
 
         if(books.length == 0){
             res.status(400).json({
-                status: '400',
+                status: 400,
                 message: 'Cart is empty! Please choose books.'
             });
     
@@ -110,8 +110,8 @@ exports.checkOut = async (req, res) => {
                 activeMember[0].save()
             })
             
-            res.status(200).json({
-                status: '200',
+            res.status(202).json({
+                status: 202,
                 message: 'Your transaction created! Please wait for admin to accept it.'
             });
         }
@@ -128,8 +128,8 @@ exports.getUserTransaction = async (req, res) => {
         const member = await Member.findOne({'member_id':user._id})
         const transaction = await Transaction.find({'_id':member.transactions})
         
-        res.status(200).json({
-            status: '200',
+        res.status(302).json({
+            status: 302,
             message: 'Success!',
             data: transaction
         });
@@ -145,7 +145,7 @@ exports.returnBook = async (req, res) => {
         const selectedTransaction = await Transaction.findById(req.params.id)
         if (selectedTransaction.status != 'borrowed') {
             return res.status(400).json({
-                status: 'fail',
+                status: 400,
                 message: 'Books had been returned or in process of being borrowed'
             });
         }
@@ -168,7 +168,7 @@ exports.returnBook = async (req, res) => {
         }
 
         res.status(200).json({
-            status: '200',
+            status: 200,
             message: 'Success!',
             data: result
         });

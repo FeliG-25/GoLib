@@ -210,7 +210,7 @@ exports.updateUserPassword = async (req, res) => {
                 }
             );
 
-            res.status(201).json({
+            res.status(202).json({
                 status: 'success',
                 data: {
                     upd_user
@@ -237,7 +237,7 @@ exports.updateUserProfile = async (req, res) => {
             runValidators: true
         })
 
-        res.status(201).json({
+        res.status(202).json({
             status: 'success',
             data: {
                 user
