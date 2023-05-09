@@ -53,11 +53,11 @@ exports.addBook = async (req,res) => {
                 const uploadedFile = await drive.files.create({
                     resource: fileMetadata,
                     media: media,
-                    fields: 'id'
+                    fields: 'webViewLink'
                 });
 
                 //biar yang disimpen di mongo si id imagenya aja
-                req.body.cover_path = uploadedFile.data.id.toString();
+                req.body.cover_path = uploadedFile.data.webViewLink;
                 
                 //create buku ke mongodb
                 const newBook = await Book.create(req.body)
