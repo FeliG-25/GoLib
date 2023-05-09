@@ -18,8 +18,8 @@ exports.getUserCart = async (req, res) => {
         const member = await Member.findOne({'member_id':user._id})
         const cart = await Cart.find({'_id':member.cart});
         
-        res.status(302).json({
-            status: 302,
+        res.status(200).json({
+            status: 200,
             message: 'Success!',
             data: cart
         });
@@ -128,8 +128,8 @@ exports.getUserTransaction = async (req, res) => {
         const member = await Member.findOne({'member_id':user._id})
         const transaction = await Transaction.find({'_id':member.transactions})
         
-        res.status(302).json({
-            status: 302,
+        res.status(200).json({
+            status: 200,
             message: 'Success!',
             data: transaction
         });
