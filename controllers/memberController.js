@@ -157,7 +157,7 @@ exports.returnBook = async (req, res) => {
             { $set:
                 {
                     status: 'return_process',
-                    returned_date: date.substring(0, 10)
+                    returned_date: date.substring(0, 11)
                 }
             }
         )

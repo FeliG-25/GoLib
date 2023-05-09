@@ -154,9 +154,9 @@ exports.changeBorrowingState = async (req,res) => {
                 //update books stocks
                 for (var i = 0; i < transactionData.books.length; i++) {
                     if (state_type === "returned") {
-                        await Book.updateOne(transactionData.books[i],{$inc: {stock: 1}})
+                        await Book.updateOne({"_id": mongoose.Types.ObjectId(transactionData.books[i]._id)},{$inc: {stock: 1}})
                     } else if (state_type === "borrowed") {
-                        await Book.updateOne(transactionData.books[i],{$inc: {stock: -1}})
+                        await Book.updateOne({"_id": mongoose.Types.ObjectId(transactionData.books[i]._id)},{$inc: {stock: -1}})
                     }
                 }
                 
