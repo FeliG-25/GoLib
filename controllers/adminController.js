@@ -178,8 +178,6 @@ exports.changeBorrowingState = async (req,res) => {
                 const member = await Member.findOne({transactions: mongoose.Types.ObjectId(req.params.id)}).populate('transactions')
                 if (state_type === "returned") {
                     member.balance -= (transactionData.fee + Number(delivery_fee))
-                } else {
-                    member.balance -= transactionData.price
                 }
                 await member.save()
 
