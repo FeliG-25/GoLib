@@ -52,7 +52,7 @@ exports.receivePacket = async (req, res) => {
                 await Courier.updateOne({_id: mongoose.Types.ObjectId(req.params.id_courier)},{courier_status: "available"})
                 await Borrow.updateOne({transaction_id:mongoose.Types.ObjectId(req.params.id_trans),courier_id:mongoose.Types.ObjectId(req.params.id_courier),status:'on_the_way'},{status:'received'})
                 res.status(200).json({
-                    status: 400,
+                    status: 200,
                     message: 'Packet received'
                 })
             } else {
