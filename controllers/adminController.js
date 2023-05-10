@@ -53,11 +53,11 @@ exports.addBook = async (req,res) => {
                 const uploadedFile = await drive.files.create({
                     resource: fileMetadata,
                     media: media,
-                    fields: 'id'
+                    fields: 'webViewLink'
                 });
 
                 //biar yang disimpen di mongo si id imagenya aja
-                req.body.cover_path = uploadedFile.data.id.toString();
+                req.body.cover_path = uploadedFile.data.webViewLink;
                 
                 //create buku ke mongodb
                 const newBook = await Book.create(req.body)
@@ -178,8 +178,6 @@ exports.changeBorrowingState = async (req,res) => {
                 const member = await Member.findOne({transactions: mongoose.Types.ObjectId(req.params.id)}).populate('transactions')
                 if (state_type === "returned") {
                     member.balance -= (transactionData.fee + Number(delivery_fee))
-                } else {
-                    member.balance -= transactionData.price
                 }
                 await member.save()
 
